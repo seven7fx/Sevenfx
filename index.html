@@ -4807,12 +4807,12 @@ document.querySelectorAll('.course-card, .mentorship-card').forEach(el => observ
 ══════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ── Firebase Config ──────────────────────────────────────
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyDozcA-cfejrnyx5yF2lW1w1_cjlgZWv1Q",
   authDomain: "sevenfx.firebaseapp.com",
   projectId: "sevenfx",
   storageBucket: "sevenfx.firebasestorage.app",
@@ -4824,6 +4824,11 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
+
+// Explicitly set LOCAL persistence so user stays logged in after refresh
+setPersistence(auth, browserLocalPersistence).catch(e =>
+  console.warn('[SevenFX] Persistence warning:', e.message)
+);
 
 // ── Helpers ──────────────────────────────────────────────
 function showAuthErr(elId, msg) {
@@ -4855,6 +4860,8 @@ function friendlyError(code) {
     'auth/invalid-credential':     'Incorrect email or password.',
     'auth/too-many-requests':      'Too many attempts. Please wait a moment and try again.',
     'auth/network-request-failed': 'Network error. Please check your connection.',
+    'auth/operation-not-allowed':  'Email/password sign-in is not enabled. Contact support.',
+    'auth/unauthorized-domain':    'Domain not authorized. Contact support.',
   };
   return map[code] || 'Something went wrong. Please try again.';
 }
@@ -4862,10 +4869,13 @@ function friendlyError(code) {
 // ── Check if user is admin ───────────────────────────────
 async function checkAdmin(email) {
   try {
-    const ref = doc(db, 'admins', email.toLowerCase().replace(/[.]/g, '_'));
-    const snap = await getDoc(ref);
+    // Document ID in 'admins' collection = raw email (e.g. "you@gmail.com")
+    const snap = await getDoc(doc(db, 'admins', email.toLowerCase()));
     return snap.exists();
-  } catch { return false; }
+  } catch (e) {
+    console.warn('[SevenFX] Admin check failed:', e.code, e.message);
+    return false;
+  }
 }
 
 // ── Update nav after auth state changes ─────────────────
@@ -4955,6 +4965,7 @@ window.firebaseSignup = async function() {
     }, 600);
 
   } catch (err) {
+    console.error('[SevenFX Signup Error]', err.code, err.message);
     setBtn('signupBtn', 'Create Account →', false);
     showAuthErr('authErrSignup', friendlyError(err.code));
   }
@@ -4991,6 +5002,7 @@ window.firebaseSignin = async function() {
     );
 
   } catch (err) {
+    console.error('[SevenFX Signin Error]', err.code, err.message);
     setBtn('signinBtn', 'Sign In →', false);
     showAuthErr('authErrSignin', friendlyError(err.code));
   }
@@ -5001,8 +5013,9 @@ window.firebaseLogout = async function() {
   try {
     await signOut(auth);
     updateNavAuth(null, 'user');
+    console.log('[SevenFX] Logged out successfully.');
   } catch (err) {
-    console.error('Logout error:', err);
+    console.error('[SevenFX Logout Error]', err.code, err.message);
   }
 };
 
