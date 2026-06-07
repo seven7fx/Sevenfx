@@ -5333,6 +5333,7 @@ async function loadPendingCourses(uid) {
 }
 
 // Apply locked / pending / unlocked UI to every course card
+// VISUAL ONLY — actual access is always verified live in showCourseContent()
 function applyCourseUI(approvedMap, pendingMap) {
   pendingMap = pendingMap || {};
   COURSE_IDS.forEach(id => {
@@ -5344,16 +5345,17 @@ function applyCourseUI(approvedMap, pendingMap) {
     if (!card) return;
 
     if (approvedMap[id]) {
-      // ✅ UNLOCKED
+      // ✅ UNLOCKED (visual only — real gate is in showCourseContent)
       if (badge) { badge.textContent = '✅ ENROLLED'; badge.style.background = 'rgba(52,211,153,.15)'; badge.style.borderColor = 'rgba(52,211,153,.4)'; badge.style.color = '#34d399'; }
-      // Remove all 🔒 from module titles
       card.querySelectorAll('.module-lock').forEach(el => { el.textContent = '✅'; el.style.color = '#34d399'; });
-      // Change enroll buttons to "Go to Course"
       [btnInner, btnFooter].forEach(b => {
         if (!b) return;
         b.textContent = '▶ Go to Course';
         b.style.background = 'linear-gradient(135deg,#34d399,#059669)';
-        b.onclick = () => showCourseContent(id);
+        b.style.border = '';
+        b.style.color = '';
+        b.onclick = null;
+        b.setAttribute('onclick', `showCourseContent('${id}')`);
       });
     } else if (pendingMap[id]) {
       // ⏳ PENDING — payment submitted, waiting approval
@@ -5364,16 +5366,9 @@ function applyCourseUI(approvedMap, pendingMap) {
         b.style.background = 'rgba(251,191,36,.1)';
         b.style.border = '1px solid rgba(251,191,36,.3)';
         b.style.color = 'var(--gold)';
-        b.onclick = () => {
-          const info = coursePricing[id] || {};
-          showSuccessModal(
-            'Payment Under Review ⏳',
-            'Your payment for the ' + info.name + ' has been submitted and is under review. You will receive access within 24–48 hours after approval.',
-            '⏳',
-            'Contact via Telegram',
-            () => { closeSuccessModal(); window.open('https://t.me/Seven7FxAcademy','_blank'); }
-          );
-        };
+        b.onclick = null;
+        // Routes through showCourseContent which will show the pending message
+        b.setAttribute('onclick', `showCourseContent('${id}')`);
       });
     } else {
       // 🔒 LOCKED — default state
@@ -5392,40 +5387,60 @@ function applyCourseUI(approvedMap, pendingMap) {
   });
 }
 
-// What happens when user clicks Enroll button
+// What happens when user clicks Enroll/Start button
 window.handleCourseBtn = async function(courseId, courseName, btn) {
-  const user = auth.currentUser;
+  const user = auth?.currentUser;
+
+  // Gate 1: not logged in → open login
   if (!user) {
-    // Not logged in → open auth modal on signup tab
     openAuth('course', courseId, courseName);
     return;
   }
-  // Logged in → check approved, pending, or neither
-  const [approved, pending] = await Promise.all([
-    loadUserCourses(user.uid),
-    loadPendingCourses(user.uid),
-  ]);
 
-  if (approved[courseId]) {
-    // ✅ Access granted — go to course
-    showCourseContent(courseId);
+  // Gate 2: live Firestore doc check — is access granted?
+  const accessDocId = user.uid + '_' + courseId;
+  let hasAccess = false;
+  try {
+    const snap = await getDoc(doc(db, 'courseAccess', accessDocId));
+    if (snap.exists() && snap.data().access === true) {
+      hasAccess = true;
+    }
+  } catch(e) {
+    console.error('[SevenFX] handleCourseBtn access check:', e.message);
+  }
+
+  if (hasAccess) {
+    // ✅ Approved — pass through the real gate (which re-verifies)
+    await showCourseContent(courseId);
     return;
   }
 
-  if (pending[courseId]) {
-    // ⏳ Payment submitted, waiting for admin approval
+  // Gate 3: check for pending payment
+  let hasPending = false;
+  try {
+    const pq = query(
+      collection(db, 'payments'),
+      where('uid',      '==', user.uid),
+      where('courseId', '==', courseId),
+      where('status',   '==', 'pending')
+    );
+    const psnap = await getDocs(pq);
+    hasPending = !psnap.empty;
+  } catch(e) { /* ignore */ }
+
+  if (hasPending) {
+    // Payment submitted, waiting for admin — do NOT open payment flow again
     const info = coursePricing[courseId] || {};
-    showSuccessModal(
-      'Payment Under Review ⏳',
-      'Your payment for the ' + (info.name || courseName) + ' has been submitted and is currently being reviewed by our team. You will receive access within 24–48 hours after approval. If you have any questions, contact us via Telegram.',
-      '⏳',
-      'Contact via Telegram',
-      () => { closeSuccessModal(); window.open('https://t.me/Seven7FxAcademy','_blank'); }
+    showAccessDeniedModal(
+      '⏳ Awaiting Admin Approval',
+      'Your payment for the <strong>' + (info.name || courseName) + '</strong> has been received and is under review.',
+      'Access will be granted within 24–48 hours once confirmed by an admin.',
+      false
     );
     return;
   }
 
-  // Not enrolled and no pending payment → go to payment step
+  // Not approved, no pending payment → open payment flow
   authState.courseId = courseId;
   const info = coursePricing[courseId] || {};
   const el = document.getElementById('payCourseName');
@@ -5437,8 +5452,73 @@ window.handleCourseBtn = async function(courseId, courseName, btn) {
   showAuthStep(2);
 };
 
-// Show course content modal (placeholder — expandable later)
-window.showCourseContent = function(courseId) {
+// ── REAL-TIME FIRESTORE ACCESS GATE ─────────────────────────
+// This is the ONLY function that ever shows course content.
+// It always re-reads Firestore live — no cache, no client-side flags.
+window.showCourseContent = async function(courseId) {
+  const user = auth?.currentUser;
+
+  // Gate 1: must be logged in
+  if (!user) {
+    openAuth('course', courseId, '');
+    return;
+  }
+
+  // Gate 2: live Firestore read — check courseAccess doc
+  const accessDocId = user.uid + '_' + courseId;
+  let hasAccess = false;
+  try {
+    const snap = await getDoc(doc(db, 'courseAccess', accessDocId));
+    if (snap.exists() && snap.data().access === true) {
+      hasAccess = true;
+    }
+  } catch(e) {
+    console.error('[SevenFX] Access gate error:', e.message);
+    hasAccess = false;
+  }
+
+  // Gate 3: deny if not approved
+  if (!hasAccess) {
+    // Check if there's a pending payment so we can show a better message
+    let hasPending = false;
+    try {
+      const pq = query(
+        collection(db, 'payments'),
+        where('uid',      '==', user.uid),
+        where('courseId', '==', courseId),
+        where('status',   '==', 'pending')
+      );
+      const psnap = await getDocs(pq);
+      hasPending = !psnap.empty;
+    } catch(e) { /* ignore */ }
+
+    const courseNames = {
+      beginner:'Beginner Trading Course', intermediate:'Intermediate Trading Course',
+      advanced:'Advanced Trading Course', propfirm:'Prop Firm Trading Program',
+    };
+    const cName = courseNames[courseId] || courseId;
+
+    if (hasPending) {
+      showAccessDeniedModal(
+        '⏳ Awaiting Admin Approval',
+        'Your payment for the <strong>' + cName + '</strong> has been received and is currently under review by our team.',
+        'Access will be granted within 24–48 hours once your payment is confirmed by an admin.',
+        false
+      );
+    } else {
+      showAccessDeniedModal(
+        '🔒 Course Access Denied',
+        'You do not have approved access to the <strong>' + cName + '</strong>.',
+        'Please enroll and submit your payment. Access is only granted after admin approval.',
+        true,
+        courseId,
+        cName
+      );
+    }
+    return;
+  }
+
+  // ✅ Access confirmed — show course content
   const names = {
     beginner:     'Beginner Trading Course',
     intermediate: 'Intermediate Trading Course',
@@ -5453,6 +5533,44 @@ window.showCourseContent = function(courseId) {
     () => { closeSuccessModal(); window.open('https://t.me/Seven7FxAcademy','_blank'); }
   );
 };
+
+// Access denied modal — shown whenever access gate fails
+function showAccessDeniedModal(title, bodyHtml, subtext, showEnroll, courseId, courseName) {
+  // Reuse the success modal overlay but style it as a denial
+  const overlay = document.getElementById('successModalOverlay');
+  const icon    = document.getElementById('smIcon');
+  const heading = document.getElementById('smHeading');
+  const msg     = document.getElementById('smMessage');
+  const title2  = document.getElementById('smTitle');
+  const primaryBtn = document.getElementById('smPrimaryBtn');
+
+  if (!overlay) return;
+
+  icon.textContent    = showEnroll ? '🔒' : '⏳';
+  heading.textContent = title;
+  title2.textContent  = 'SevenFX — Access Denied';
+
+  // Use innerHTML for the body so we can bold course name
+  msg.innerHTML = bodyHtml +
+    '<br><br><span style="font-size:.82rem;color:var(--text3);">' + subtext + '</span>';
+
+  if (showEnroll && courseId) {
+    primaryBtn.textContent = 'Enroll Now →';
+    primaryBtn.onclick = () => {
+      closeSuccessModal();
+      handleCourseBtn(courseId, courseName, null);
+    };
+  } else {
+    primaryBtn.textContent = 'Contact via Telegram';
+    primaryBtn.onclick = () => {
+      closeSuccessModal();
+      window.open('https://t.me/Seven7FxAcademy', '_blank');
+    };
+  }
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
 
 // Save payment record to Firestore payments collection
 window._fbSubmitPayment = async function(receiptFile) {
@@ -5684,7 +5802,7 @@ window.adminUpdatePayment = async function(payDocId, uid, courseId, newStatus, u
       reviewedBy: auth.currentUser?.email || 'admin',
     });
 
-    // 2. If approved → write courseAccess document
+    // 2. If approved → write courseAccess document with access = true
     if (newStatus === 'approved' && uid && courseId) {
       const accessDocId = uid + '_' + courseId;
       await setDoc(doc(db,'courseAccess', accessDocId), {
@@ -5698,22 +5816,32 @@ window.adminUpdatePayment = async function(payDocId, uid, courseId, newStatus, u
       console.log('[Admin] courseAccess granted:', accessDocId);
     }
 
-    // 3. If rejected → remove courseAccess if it exists
+    // 3. If rejected → set access = false (do not delete — keep the audit trail)
     if (newStatus === 'rejected' && uid && courseId) {
       const accessDocId = uid + '_' + courseId;
       try {
-        await deleteDoc(doc(db,'courseAccess', accessDocId));
-        console.log('[Admin] courseAccess revoked:', accessDocId);
-      } catch(e2) { /* doc might not exist, that's fine */ }
+        await setDoc(doc(db,'courseAccess', accessDocId), {
+          uid:        uid,
+          email:      userEmail || '',
+          courseId:   courseId,
+          access:     false,
+          revokedAt:  serverTimestamp(),
+          revokedBy:  auth.currentUser?.email || 'admin',
+        });
+        console.log('[Admin] courseAccess revoked (access=false):', accessDocId);
+      } catch(e2) { console.warn('[Admin] Could not update access doc:', e2.message); }
     }
 
     // 4. Refresh admin table
     await adminLoadPayments();
 
-    // 5. If approved user is currently logged in, refresh their UI live
-    if (newStatus === 'approved' && auth.currentUser?.uid === uid) {
-      const courses = await loadUserCourses(uid);
-      applyCourseUI(courses);
+    // 5. If affected user is currently logged in, refresh their UI live
+    if (auth.currentUser?.uid === uid) {
+      const [courses, pending] = await Promise.all([
+        loadUserCourses(uid),
+        loadPendingCourses(uid),
+      ]);
+      applyCourseUI(courses, pending);
     }
   } catch(e) {
     console.error('[Admin] Update error:', e);
@@ -5742,12 +5870,16 @@ window.adminGrantAccess = async function(uid, courseId, userEmail) {
   }
 };
 
-// Revoke course access
+// Revoke course access — sets access=false, does not delete
 window.adminRevokeAccess = async function(accessDocId) {
   if (!confirm('Revoke this course access?')) return;
   try {
-    await deleteDoc(doc(db,'courseAccess', accessDocId));
-    console.log('[Admin] courseAccess revoked:', accessDocId);
+    await updateDoc(doc(db,'courseAccess', accessDocId), {
+      access:    false,
+      revokedAt: serverTimestamp(),
+      revokedBy: auth.currentUser?.email || 'admin',
+    });
+    console.log('[Admin] courseAccess revoked (access=false):', accessDocId);
     await adminLoadCourseAccess();
   } catch(e) {
     console.error('[Admin] Revoke error:', e);
@@ -5765,28 +5897,48 @@ window.adminLoadCourseAccess = async function() {
     try {
       snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
     } catch(indexErr) {
-      // Fallback: fetch without orderBy if composite index doesn't exist yet
       snap = await getDocs(collection(db,'courseAccess'));
     }
     const rows = [];
     snap.forEach(d => {
       const data = d.data();
-      const date = data.approvedAt?.toDate
-        ? data.approvedAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      const isActive = data.access === true;
+      const date = (data.approvedAt || data.revokedAt)?.toDate
+        ? (data.approvedAt || data.revokedAt).toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
         : '—';
       const courseNames = {beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced',propfirm:'Prop Firm'};
+      const statusBadge = isActive
+        ? `<span class="status-badge status-approved">✅ Active</span>`
+        : `<span class="status-badge status-rejected">✕ Revoked</span>`;
+      const actionBtn = isActive
+        ? `<button class="admin-action-btn btn-reject" onclick="adminRevokeAccess('${d.id}')">✕ Revoke</button>`
+        : `<button class="admin-action-btn btn-approve" onclick="adminReGrantAccess('${d.id}')">✓ Re-Grant</button>`;
       rows.push(`<tr>
         <td style="font-size:.75rem;white-space:nowrap;">${date}</td>
         <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;">${data.email||data.uid||'—'}</td>
         <td><span class="status-badge status-approved">${courseNames[data.courseId]||data.courseId||'—'}</span></td>
-        <td style="font-size:.75rem;">${data.approvedBy||'—'}</td>
-        <td><button class="admin-action-btn btn-reject" onclick="adminRevokeAccess('${d.id}')">✕ Revoke</button></td>
+        <td>${statusBadge}</td>
+        <td>${actionBtn}</td>
       </tr>`);
     });
     tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" class="admin-empty">No course access records.</td></tr>';
   } catch(e) {
     console.error('[Admin] CourseAccess load error:', e);
     tbody.innerHTML = `<tr><td colspan="5" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+};
+
+// Re-grant access (for revoked records)
+window.adminReGrantAccess = async function(accessDocId) {
+  try {
+    await updateDoc(doc(db,'courseAccess', accessDocId), {
+      access:     true,
+      approvedAt: serverTimestamp(),
+      approvedBy: auth.currentUser?.email || 'admin',
+    });
+    await adminLoadCourseAccess();
+  } catch(e) {
+    alert('Failed to re-grant: ' + e.message);
   }
 };
 
