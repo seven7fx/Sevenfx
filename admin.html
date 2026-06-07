@@ -899,13 +899,16 @@ async function auditLog(action, details='') {
 let _currentAdmin = null;
 let _authResolved = false;
 
-// Set persistence first so the stored session is available immediately
-setPersistence(auth, browserLocalPersistence).catch(e => console.warn('Persistence:', e.message));
+// Ensure session is restored from localStorage before anything fires
+setPersistence(auth, browserLocalPersistence).catch(e => console.warn('[SevenFX Admin] Persistence warning:', e.message));
 
-// Give Firebase up to 6 seconds to restore the session before showing "not logged in"
+// Fallback: if onAuthStateChanged never fires within 8s, show not-logged-in
 const authTimeout = setTimeout(() => {
-  if (!_authResolved) showDenied('You must be logged in to access this page.');
-}, 6000);
+  if (!_authResolved) {
+    console.warn('[SevenFX Admin] Auth timeout — no session restored after 8s');
+    showDenied('You must be logged in to access this page.');
+  }
+}, 8000);
 
 onAuthStateChanged(auth, async user => {
   clearTimeout(authTimeout);
@@ -914,25 +917,91 @@ onAuthStateChanged(auth, async user => {
   const screen = document.getElementById('accessScreen');
   const msg    = document.getElementById('accessMsg');
 
+  // ── Debug: Step 1 ──
+  console.log('[SevenFX Admin] ── Auth State Changed ──');
+  console.log('[SevenFX Admin] User object:', user);
+
   if (!user) {
+    console.warn('[SevenFX Admin] No authenticated user. Showing login wall.');
     showDenied('You must be logged in to access this page.');
     return;
   }
 
+  // ── Debug: Step 2 ──
+  console.log('[SevenFX Admin] UID:', user.uid);
+  console.log('[SevenFX Admin] Email:', user.email);
+
   msg.textContent = 'Checking admin privileges…';
+
+  // ── Step 3: Query admins/{uid} (document ID = Firebase UID) ──
+  const adminDocPath = `admins/${user.uid}`;
+  console.log('[SevenFX Admin] Querying Firestore path:', adminDocPath);
+
   let isAdmin = false;
+  let adminByEmail = false;
+
   try {
-    const snap = await getDoc(doc(db, 'admins', user.email.toLowerCase()));
-    isAdmin = snap.exists();
+    // Primary check: admins/{uid}
+    const snapByUID = await getDoc(doc(db, 'admins', user.uid));
+    console.log('[SevenFX Admin] Doc exists (by UID):', snapByUID.exists());
+    if (snapByUID.exists()) {
+      const data = snapByUID.data();
+      console.log('[SevenFX Admin] Doc data (by UID):', data);
+      console.log('[SevenFX Admin] role field:', data.role);
+      // Accept if doc exists regardless of role field, OR if role === 'admin'
+      if (data.role === 'admin' || snapByUID.exists()) {
+        isAdmin = true;
+        console.log('[SevenFX Admin] ✅ Admin verified via UID document.');
+      }
+    }
+
+    // Fallback check: admins/{email} (legacy support)
+    if (!isAdmin && user.email) {
+      const snapByEmail = await getDoc(doc(db, 'admins', user.email.toLowerCase()));
+      console.log('[SevenFX Admin] Doc exists (by email):', snapByEmail.exists());
+      if (snapByEmail.exists()) {
+        const data = snapByEmail.data();
+        console.log('[SevenFX Admin] Doc data (by email):', data);
+        isAdmin = true;
+        adminByEmail = true;
+        console.log('[SevenFX Admin] ✅ Admin verified via email document (legacy).');
+      }
+    }
+
+    // Fallback check: check users/{uid} for role field
+    if (!isAdmin) {
+      const userSnap = await getDoc(doc(db, 'users', user.uid));
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        console.log('[SevenFX Admin] users doc data:', userData);
+        if (userData.role === 'admin') {
+          isAdmin = true;
+          console.log('[SevenFX Admin] ✅ Admin verified via users/{uid}.role field.');
+        }
+      }
+    }
+
   } catch(e) {
-    console.warn('Admin check error:', e.message);
+    console.error('[SevenFX Admin] ❌ Firestore query error:', e.code, e.message);
+    // If it's a permissions error, show a clearer message
+    if (e.code === 'permission-denied') {
+      showDenied('Firestore permission denied. Check your security rules for the admins collection.');
+      return;
+    }
   }
+
+  console.log('[SevenFX Admin] Final isAdmin result:', isAdmin);
+
   if (!isAdmin) {
+    console.warn('[SevenFX Admin] ❌ Access denied for UID:', user.uid, '/ Email:', user.email);
     showDenied('Access Denied. You do not have admin privileges.');
     return;
   }
+
+  // ── Grant access ──
   _currentAdmin = user;
-  // Populate UI
+  console.log('[SevenFX Admin] ✅ Access granted. Loading dashboard…');
+
   const name = user.displayName || user.email.split('@')[0];
   document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
   document.getElementById('sidebarEmail').textContent = user.email;
