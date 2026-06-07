@@ -5286,7 +5286,7 @@ window.firebaseLogout = async function() {
     await signOut(auth);
     updateNavAuth(null, 'user');
     // Reset all course UI to locked state
-    applyCourseUI({});
+    applyCourseUI({}, {});
     console.log('[SevenFX] Logged out successfully.');
   } catch (err) {
     console.error('[SevenFX Logout Error]', err.code, err.message);
@@ -5333,7 +5333,8 @@ async function loadPendingCourses(uid) {
 }
 
 // Apply locked / pending / unlocked UI to every course card
-function applyCourseUI(approvedMap) {
+function applyCourseUI(approvedMap, pendingMap) {
+  pendingMap = pendingMap || {};
   COURSE_IDS.forEach(id => {
     const card      = document.getElementById('courseCard-' + id);
     const badge     = document.getElementById('lockBadge-'  + id);
@@ -5354,6 +5355,26 @@ function applyCourseUI(approvedMap) {
         b.style.background = 'linear-gradient(135deg,#34d399,#059669)';
         b.onclick = () => showCourseContent(id);
       });
+    } else if (pendingMap[id]) {
+      // ⏳ PENDING — payment submitted, waiting approval
+      if (badge) { badge.textContent = '⏳ PENDING'; badge.style.background = 'rgba(251,191,36,.12)'; badge.style.borderColor = 'rgba(251,191,36,.35)'; badge.style.color = 'var(--gold)'; }
+      [btnInner, btnFooter].forEach(b => {
+        if (!b) return;
+        b.textContent = '⏳ Awaiting Approval';
+        b.style.background = 'rgba(251,191,36,.1)';
+        b.style.border = '1px solid rgba(251,191,36,.3)';
+        b.style.color = 'var(--gold)';
+        b.onclick = () => {
+          const info = coursePricing[id] || {};
+          showSuccessModal(
+            'Payment Under Review ⏳',
+            'Your payment for the ' + info.name + ' has been submitted and is under review. You will receive access within 24–48 hours after approval.',
+            '⏳',
+            'Contact via Telegram',
+            () => { closeSuccessModal(); window.open('https://t.me/Seven7FxAcademy','_blank'); }
+          );
+        };
+      });
     } else {
       // 🔒 LOCKED — default state
       if (badge) { badge.textContent = '🔒 LOCKED'; badge.style.background = ''; badge.style.borderColor = ''; badge.style.color = ''; }
@@ -5362,6 +5383,8 @@ function applyCourseUI(approvedMap) {
         if (!b) return;
         b.textContent = '🔓 Start Course — Enroll Now';
         b.style.background = '';
+        b.style.border = '';
+        b.style.color = '';
         b.onclick = null;
         b.setAttribute('onclick', `handleCourseBtn('${id}','${coursePricing[id]?.name || id}',this)`);
       });
@@ -5370,30 +5393,48 @@ function applyCourseUI(approvedMap) {
 }
 
 // What happens when user clicks Enroll button
-window.handleCourseBtn = function(courseId, courseName, btn) {
+window.handleCourseBtn = async function(courseId, courseName, btn) {
   const user = auth.currentUser;
   if (!user) {
     // Not logged in → open auth modal on signup tab
     openAuth('course', courseId, courseName);
     return;
   }
-  // Logged in → check if already enrolled
-  loadUserCourses(user.uid).then(approved => {
-    if (approved[courseId]) {
-      showCourseContent(courseId);
-    } else {
-      // Logged in but not enrolled → go to payment step directly
-      authState.courseId = courseId;
-      const info = coursePricing[courseId] || {};
-      const el = document.getElementById('payCourseName');
-      const ep = document.getElementById('payCoursePrice');
-      if (el) el.textContent = info.name || courseName;
-      if (ep) ep.textContent = info.price || '—';
-      document.getElementById('authOverlay').classList.add('open');
-      document.body.style.overflow = 'hidden';
-      showAuthStep(2);
-    }
-  });
+  // Logged in → check approved, pending, or neither
+  const [approved, pending] = await Promise.all([
+    loadUserCourses(user.uid),
+    loadPendingCourses(user.uid),
+  ]);
+
+  if (approved[courseId]) {
+    // ✅ Access granted — go to course
+    showCourseContent(courseId);
+    return;
+  }
+
+  if (pending[courseId]) {
+    // ⏳ Payment submitted, waiting for admin approval
+    const info = coursePricing[courseId] || {};
+    showSuccessModal(
+      'Payment Under Review ⏳',
+      'Your payment for the ' + (info.name || courseName) + ' has been submitted and is currently being reviewed by our team. You will receive access within 24–48 hours after approval. If you have any questions, contact us via Telegram.',
+      '⏳',
+      'Contact via Telegram',
+      () => { closeSuccessModal(); window.open('https://t.me/Seven7FxAcademy','_blank'); }
+    );
+    return;
+  }
+
+  // Not enrolled and no pending payment → go to payment step
+  authState.courseId = courseId;
+  const info = coursePricing[courseId] || {};
+  const el = document.getElementById('payCourseName');
+  const ep = document.getElementById('payCoursePrice');
+  if (el) el.textContent = info.name || courseName;
+  if (ep) ep.textContent = info.price || '—';
+  document.getElementById('authOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  showAuthStep(2);
 };
 
 // Show course content modal (placeholder — expandable later)
@@ -5450,18 +5491,19 @@ window._fbSubmitPayment = async function(receiptFile) {
 if (!auth) { console.error('[SevenFX] onAuthStateChanged skipped — auth is null'); }
 else onAuthStateChanged(auth, async (user) => {
   if (user) {
-    const [isAdminResult, approvedCourses] = await Promise.all([
+    const [isAdminResult, approvedCourses, pendingCourses] = await Promise.all([
       checkAdmin(user.email),
-      loadUserCourses(user.uid)
+      loadUserCourses(user.uid),
+      loadPendingCourses(user.uid),
     ]);
     currentUserRole = isAdminResult ? 'admin' : 'user';
     updateNavAuth(user, currentUserRole);
-    applyCourseUI(approvedCourses);
-    console.log('[SevenFX] Courses loaded:', Object.keys(approvedCourses));
+    applyCourseUI(approvedCourses, pendingCourses);
+    console.log('[SevenFX] Courses loaded:', Object.keys(approvedCourses), '| Pending:', Object.keys(pendingCourses));
   } else {
     currentUserRole = 'user';
     updateNavAuth(null, 'user');
-    applyCourseUI({});
+    applyCourseUI({}, {});
   }
 });
 
@@ -5474,9 +5516,10 @@ window.openProfile = async function() {
   document.getElementById('profileOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  const name = user.displayName || user.email.split('@')[0];
-  document.getElementById('profileAvatar').textContent        = name.charAt(0).toUpperCase();
-  document.getElementById('profileName').textContent          = name;
+  // Fallback name until Firestore loads
+  const fallbackName = user.email.split('@')[0];
+  document.getElementById('profileAvatar').textContent        = fallbackName.charAt(0).toUpperCase();
+  document.getElementById('profileName').textContent          = fallbackName;
   document.getElementById('profileEmailDisplay').textContent  = user.email;
   document.getElementById('profileEmailVal').textContent      = user.email;
 
@@ -5489,11 +5532,15 @@ window.openProfile = async function() {
     badge.className   = 'profile-role-badge profile-role-user';
   }
 
-  // Firestore user doc
+  // Firestore user doc — load username, phone, joined date
   try {
     const snap = await getDoc(doc(db, 'users', user.uid));
     if (snap.exists()) {
       const d = snap.data();
+      // Use stored username from Firestore
+      const storedName = d.username || fallbackName;
+      document.getElementById('profileAvatar').textContent = storedName.charAt(0).toUpperCase();
+      document.getElementById('profileName').textContent   = storedName;
       document.getElementById('profilePhoneVal').textContent  = d.phone || '—';
       document.getElementById('profileJoinedVal').textContent = d.createdAt?.toDate
         ? d.createdAt.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})
@@ -5510,7 +5557,6 @@ window.openProfile = async function() {
     beginner:'Beginner Trading Course', intermediate:'Intermediate Trading Course',
     advanced:'Advanced Trading Course', propfirm:'Prop Firm Trading Program',
   };
-  const enrolled = ['beginner','intermediate','advanced','propfirm'].filter(id => approved[id]);
   const courseList = document.getElementById('profileCoursesList');
 
   // Get pending courses too
@@ -5518,19 +5564,19 @@ window.openProfile = async function() {
   const ALL_COURSES = ['beginner','intermediate','advanced','propfirm'];
 
   const courseRows = ALL_COURSES.map(id => {
-    let badge, action = '';
+    let badgeHtml, action = '';
     if (approved[id]) {
-      badge  = `<span class="status-badge status-approved">✅ Approved</span>`;
+      badgeHtml  = `<span class="status-badge status-approved">✅ Approved</span>`;
       action = `<button onclick="closeProfile();showCourseContent('${id}');" style="font-size:.72rem;padding:3px 10px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;border-radius:6px;cursor:pointer;font-family:var(--font-body);font-weight:600;">▶ Enter</button>`;
     } else if (pendingMap[id]) {
-      badge  = `<span class="status-badge status-pending">⏳ Pending</span>`;
+      badgeHtml  = `<span class="status-badge status-pending">⏳ Pending</span>`;
     } else {
-      badge  = `<span class="status-badge status-rejected" style="background:rgba(100,100,130,.1);color:var(--text3);border-color:var(--border);">🔒 Locked</span>`;
+      badgeHtml  = `<span class="status-badge status-rejected" style="background:rgba(100,100,130,.1);color:var(--text3);border-color:var(--border);">🔒 Locked</span>`;
       action = `<button onclick="closeProfile();handleCourseBtn('${id}','${courseNames[id]}',null);" style="font-size:.72rem;padding:3px 10px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.25);color:var(--accent);border-radius:6px;cursor:pointer;font-family:var(--font-body);font-weight:600;">Enroll</button>`;
     }
     return `<div class="profile-course-item" style="flex-wrap:wrap;gap:6px;">
       <div class="profile-course-name" style="flex:1;min-width:120px;">📚 ${courseNames[id]}</div>
-      <div style="display:flex;align-items:center;gap:6px;">${badge}${action}</div>
+      <div style="display:flex;align-items:center;gap:6px;">${badgeHtml}${action}</div>
     </div>`;
   }).join('');
 
@@ -5581,7 +5627,13 @@ window.adminLoadPayments = async function() {
   const tbody = document.getElementById('adminPaymentsBody');
   tbody.innerHTML = '<tr><td colspan="7" class="admin-empty">Loading…</td></tr>';
   try {
-    const snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
+    } catch(indexErr) {
+      // Fallback without orderBy if index is missing
+      snap = await getDocs(collection(db,'payments'));
+    }
     let total=0, pending=0, approved=0, rejected=0;
     const rows = [];
     snap.forEach(d => {
@@ -5618,7 +5670,7 @@ window.adminLoadPayments = async function() {
       : '<tr><td colspan="7" class="admin-empty">No payments yet.</td></tr>';
   } catch(e) {
     console.error('[Admin] Payments error:', e);
-    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">Error: ${e.message}<br><small>Check Firestore indexes — you may need a composite index on payments(submittedAt desc).</small></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
   }
 };
 
@@ -5709,7 +5761,13 @@ window.adminLoadCourseAccess = async function() {
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="5" class="admin-empty">Loading…</td></tr>';
   try {
-    const snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
+    } catch(indexErr) {
+      // Fallback: fetch without orderBy if composite index doesn't exist yet
+      snap = await getDocs(collection(db,'courseAccess'));
+    }
     const rows = [];
     snap.forEach(d => {
       const data = d.data();
@@ -5739,7 +5797,12 @@ window.adminLoadUsers = async function() {
   const tbody = document.getElementById('adminUsersBody');
   tbody.innerHTML = '<tr><td colspan="6" class="admin-empty">Loading…</td></tr>';
   try {
-    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    } catch(indexErr) {
+      snap = await getDocs(collection(db,'users'));
+    }
     _adminAllUsers = [];
     snap.forEach(d => { _adminAllUsers.push({ id: d.id, ...d.data() }); });
     adminRenderUsers(_adminAllUsers);
