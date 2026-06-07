@@ -5032,7 +5032,7 @@ document.querySelectorAll('.course-card, .mentorship-card').forEach(el => observ
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ── Firebase Config ──────────────────────────────────────
 const firebaseConfig = {
@@ -5299,13 +5299,13 @@ window.firebaseLogout = async function() {
 
 const COURSE_IDS = ['beginner','intermediate','advanced','propfirm'];
 
-// Load user's approved courses from Firestore payments collection
+// Load user's approved courses from courseAccess collection
 async function loadUserCourses(uid) {
   try {
     const q = query(
-      collection(db, 'payments'),
+      collection(db, 'courseAccess'),
       where('uid',    '==', uid),
-      where('status', '==', 'approved')
+      where('access', '==', true)
     );
     const snap = await getDocs(q);
     const approved = {};
@@ -5315,6 +5315,21 @@ async function loadUserCourses(uid) {
     console.warn('[SevenFX] loadUserCourses error:', e.message);
     return {};
   }
+}
+
+// Load pending payment courses for a user (for profile display)
+async function loadPendingCourses(uid) {
+  try {
+    const q = query(
+      collection(db, 'payments'),
+      where('uid',    '==', uid),
+      where('status', '==', 'pending')
+    );
+    const snap = await getDocs(q);
+    const pending = {};
+    snap.forEach(d => { pending[d.data().courseId] = true; });
+    return pending;
+  } catch(e) { return {}; }
 }
 
 // Apply locked / pending / unlocked UI to every course card
@@ -5498,32 +5513,28 @@ window.openProfile = async function() {
   const enrolled = ['beginner','intermediate','advanced','propfirm'].filter(id => approved[id]);
   const courseList = document.getElementById('profileCoursesList');
 
-  let listHTML = enrolled.length === 0
-    ? `<div style="color:var(--text3);font-size:.82rem;padding:10px 0;text-align:center;">No courses enrolled yet.<br>
-         <button onclick="closeProfile();document.getElementById('learning').scrollIntoView({behavior:'smooth'});"
-           style="margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:8px;
-                  padding:7px 16px;font-family:var(--font-body);font-size:.8rem;cursor:pointer;font-weight:600;">
-           Browse Courses
-         </button></div>`
-    : enrolled.map(id => `
-        <div class="profile-course-item">
-          <div class="profile-course-name">📚 ${courseNames[id]}</div>
-          <span class="status-badge status-approved">✓ Enrolled</span>
-        </div>`).join('');
+  // Get pending courses too
+  const pendingMap = await loadPendingCourses(user.uid);
+  const ALL_COURSES = ['beginner','intermediate','advanced','propfirm'];
 
-  // Pending payments
-  try {
-    const pq   = query(collection(db,'payments'), where('uid','==',user.uid), where('status','==','pending'));
-    const pSnap = await getDocs(pq);
-    pSnap.forEach(d => {
-      listHTML += `<div class="profile-course-item">
-        <div class="profile-course-name">⏳ ${d.data().courseName || d.data().courseId}</div>
-        <span class="status-badge status-pending">Pending Review</span>
-      </div>`;
-    });
-  } catch(e) {}
+  const courseRows = ALL_COURSES.map(id => {
+    let badge, action = '';
+    if (approved[id]) {
+      badge  = `<span class="status-badge status-approved">✅ Approved</span>`;
+      action = `<button onclick="closeProfile();showCourseContent('${id}');" style="font-size:.72rem;padding:3px 10px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;border-radius:6px;cursor:pointer;font-family:var(--font-body);font-weight:600;">▶ Enter</button>`;
+    } else if (pendingMap[id]) {
+      badge  = `<span class="status-badge status-pending">⏳ Pending</span>`;
+    } else {
+      badge  = `<span class="status-badge status-rejected" style="background:rgba(100,100,130,.1);color:var(--text3);border-color:var(--border);">🔒 Locked</span>`;
+      action = `<button onclick="closeProfile();handleCourseBtn('${id}','${courseNames[id]}',null);" style="font-size:.72rem;padding:3px 10px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.25);color:var(--accent);border-radius:6px;cursor:pointer;font-family:var(--font-body);font-weight:600;">Enroll</button>`;
+    }
+    return `<div class="profile-course-item" style="flex-wrap:wrap;gap:6px;">
+      <div class="profile-course-name" style="flex:1;min-width:120px;">📚 ${courseNames[id]}</div>
+      <div style="display:flex;align-items:center;gap:6px;">${badge}${action}</div>
+    </div>`;
+  }).join('');
 
-  courseList.innerHTML = listHTML;
+  courseList.innerHTML = courseRows;
 };
 
 window.closeProfile = function() {
@@ -5554,14 +5565,15 @@ window.adminOverlayClick = function(e) {
 };
 window.switchAdminTab = function(tab) {
   _adminCurrentTab = tab;
-  document.querySelectorAll('.admin-tab').forEach((t,i) => {
-    t.classList.toggle('active',(i===0&&tab==='payments')||(i===1&&tab==='users'));
-  });
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.querySelector(`.admin-tab[data-tab="${tab}"]`);
+  if (activeTab) activeTab.classList.add('active');
   document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('adminPanel-' + tab);
   if (panel) panel.classList.add('active');
   if (tab === 'payments') adminLoadPayments();
-  else adminLoadUsers();
+  else if (tab === 'users') adminLoadUsers();
+  else if (tab === 'access') adminLoadCourseAccess();
 };
 
 // Load all payments (sorted newest first)
@@ -5569,7 +5581,6 @@ window.adminLoadPayments = async function() {
   const tbody = document.getElementById('adminPaymentsBody');
   tbody.innerHTML = '<tr><td colspan="7" class="admin-empty">Loading…</td></tr>';
   try {
-    const { orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
     let total=0, pending=0, approved=0, rejected=0;
     const rows = [];
@@ -5581,11 +5592,12 @@ window.adminLoadPayments = async function() {
       const date = data.submittedAt?.toDate
         ? data.submittedAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
         : '—';
+      const safeEmail = (data.email||'').replace(/'/g,"\'");
       const approveBtn = data.status!=='approved'
-        ? `<button class="admin-action-btn btn-approve" onclick="adminUpdatePayment('${d.id}','${data.uid}','${data.courseId}','approved')">✓ Approve</button>`
-        : '';
+        ? `<button class="admin-action-btn btn-approve" onclick="adminUpdatePayment('${d.id}','${data.uid}','${data.courseId}','approved','${safeEmail}')">✓ Approve</button>`
+        : '<span style="color:var(--green);font-size:.75rem;">✓ Done</span>';
       const rejectBtn  = data.status!=='rejected'
-        ? `<button class="admin-action-btn btn-reject"  onclick="adminUpdatePayment('${d.id}','${data.uid}','${data.courseId}','rejected')">✕ Reject</button>`
+        ? `<button class="admin-action-btn btn-reject" onclick="adminUpdatePayment('${d.id}','${data.uid}','${data.courseId}','rejected','${safeEmail}')">✕ Reject</button>`
         : '';
       rows.push(`<tr>
         <td style="font-size:.75rem;white-space:nowrap;">${date}</td>
@@ -5606,22 +5618,48 @@ window.adminLoadPayments = async function() {
       : '<tr><td colspan="7" class="admin-empty">No payments yet.</td></tr>';
   } catch(e) {
     console.error('[Admin] Payments error:', e);
-    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">Error: ${e.message}<br><small>Check Firestore indexes — you may need a composite index on payments(submittedAt desc).</small></td></tr>`;
   }
 };
 
-// Approve or reject a payment
-window.adminUpdatePayment = async function(payDocId, uid, courseId, newStatus) {
+// Approve or reject a payment — also writes/removes courseAccess
+window.adminUpdatePayment = async function(payDocId, uid, courseId, newStatus, userEmail) {
   try {
-    const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    // 1. Update the payment record
     await updateDoc(doc(db,'payments',payDocId), {
       status:     newStatus,
       reviewedAt: serverTimestamp(),
       reviewedBy: auth.currentUser?.email || 'admin',
     });
+
+    // 2. If approved → write courseAccess document
+    if (newStatus === 'approved' && uid && courseId) {
+      const accessDocId = uid + '_' + courseId;
+      await setDoc(doc(db,'courseAccess', accessDocId), {
+        uid:        uid,
+        email:      userEmail || '',
+        courseId:   courseId,
+        access:     true,
+        approvedAt: serverTimestamp(),
+        approvedBy: auth.currentUser?.email || 'admin',
+      });
+      console.log('[Admin] courseAccess granted:', accessDocId);
+    }
+
+    // 3. If rejected → remove courseAccess if it exists
+    if (newStatus === 'rejected' && uid && courseId) {
+      const accessDocId = uid + '_' + courseId;
+      try {
+        await deleteDoc(doc(db,'courseAccess', accessDocId));
+        console.log('[Admin] courseAccess revoked:', accessDocId);
+      } catch(e2) { /* doc might not exist, that's fine */ }
+    }
+
+    // 4. Refresh admin table
     await adminLoadPayments();
-    // If the approved user is currently logged in, refresh their course UI live
-    if (newStatus==='approved' && auth.currentUser?.uid === uid) {
+
+    // 5. If approved user is currently logged in, refresh their UI live
+    if (newStatus === 'approved' && auth.currentUser?.uid === uid) {
       const courses = await loadUserCourses(uid);
       applyCourseUI(courses);
     }
@@ -5631,34 +5669,126 @@ window.adminUpdatePayment = async function(payDocId, uid, courseId, newStatus) {
   }
 };
 
-// Load all users
-window.adminLoadUsers = async function() {
-  const tbody = document.getElementById('adminUsersBody');
+// Manually grant course access (admin action — no payment required)
+window.adminGrantAccess = async function(uid, courseId, userEmail) {
+  try {
+    const accessDocId = uid + '_' + courseId;
+    await setDoc(doc(db,'courseAccess', accessDocId), {
+      uid:        uid,
+      email:      userEmail || '',
+      courseId:   courseId,
+      access:     true,
+      approvedAt: serverTimestamp(),
+      approvedBy: auth.currentUser?.email || 'admin',
+      manual:     true,
+    });
+    console.log('[Admin] Manual courseAccess granted:', accessDocId);
+    await adminLoadCourseAccess();
+  } catch(e) {
+    console.error('[Admin] Grant access error:', e);
+    alert('Failed to grant access: ' + e.message);
+  }
+};
+
+// Revoke course access
+window.adminRevokeAccess = async function(accessDocId) {
+  if (!confirm('Revoke this course access?')) return;
+  try {
+    await deleteDoc(doc(db,'courseAccess', accessDocId));
+    console.log('[Admin] courseAccess revoked:', accessDocId);
+    await adminLoadCourseAccess();
+  } catch(e) {
+    console.error('[Admin] Revoke error:', e);
+    alert('Failed to revoke: ' + e.message);
+  }
+};
+
+// Load courseAccess tab
+window.adminLoadCourseAccess = async function() {
+  const tbody = document.getElementById('adminAccessBody');
+  if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="5" class="admin-empty">Loading…</td></tr>';
   try {
-    const { orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    const snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
     const rows = [];
     snap.forEach(d => {
       const data = d.data();
-      const date = data.createdAt?.toDate
-        ? data.createdAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      const date = data.approvedAt?.toDate
+        ? data.approvedAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
         : '—';
+      const courseNames = {beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced',propfirm:'Prop Firm'};
       rows.push(`<tr>
         <td style="font-size:.75rem;white-space:nowrap;">${date}</td>
-        <td style="font-weight:600;">${data.username||'—'}</td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;">${data.email||'—'}</td>
-        <td style="font-family:var(--font-mono);font-size:.78rem;">${data.phone||'—'}</td>
-        <td><span class="status-badge ${data.role==='admin'?'status-approved':'status-pending'}">${data.role||'user'}</span></td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;">${data.email||data.uid||'—'}</td>
+        <td><span class="status-badge status-approved">${courseNames[data.courseId]||data.courseId||'—'}</span></td>
+        <td style="font-size:.75rem;">${data.approvedBy||'—'}</td>
+        <td><button class="admin-action-btn btn-reject" onclick="adminRevokeAccess('${d.id}')">✕ Revoke</button></td>
       </tr>`);
     });
-    tbody.innerHTML = rows.length
-      ? rows.join('')
-      : '<tr><td colspan="5" class="admin-empty">No users found.</td></tr>';
+    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="5" class="admin-empty">No course access records.</td></tr>';
   } catch(e) {
-    console.error('[Admin] Users error:', e);
+    console.error('[Admin] CourseAccess load error:', e);
     tbody.innerHTML = `<tr><td colspan="5" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
   }
+};
+
+// Store users in memory for search
+let _adminAllUsers = [];
+
+window.adminLoadUsers = async function() {
+  const tbody = document.getElementById('adminUsersBody');
+  tbody.innerHTML = '<tr><td colspan="6" class="admin-empty">Loading…</td></tr>';
+  try {
+    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    _adminAllUsers = [];
+    snap.forEach(d => { _adminAllUsers.push({ id: d.id, ...d.data() }); });
+    adminRenderUsers(_adminAllUsers);
+  } catch(e) {
+    console.error('[Admin] Users error:', e);
+    tbody.innerHTML = `<tr><td colspan="6" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+};
+
+function adminRenderUsers(users) {
+  const tbody = document.getElementById('adminUsersBody');
+  const courseOpts = ['beginner','intermediate','advanced','propfirm']
+    .map(c => `<option value="${c}">${{beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced',propfirm:'Prop Firm'}[c]}</option>`).join('');
+  const rows = users.map(data => {
+    const date = data.createdAt?.toDate
+      ? data.createdAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+      : '—';
+    const safeEmail = (data.email||'').replace(/'/g,"\'");
+    return `<tr>
+      <td style="font-size:.75rem;white-space:nowrap;">${date}</td>
+      <td style="font-weight:600;">${data.username||'—'}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;">${data.email||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:.78rem;">${data.phone||'—'}</td>
+      <td><span class="status-badge ${data.role==='admin'?'status-approved':'status-pending'}">${data.role||'user'}</span></td>
+      <td style="white-space:nowrap;">
+        <select id="grantCourse-${data.id}" style="font-size:.72rem;padding:3px 6px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:6px;margin-right:4px;">
+          ${courseOpts}
+        </select>
+        <button class="admin-action-btn btn-approve" style="font-size:.68rem;" onclick="adminGrantAccessFromRow('${data.id}','grantCourse-${data.id}','${safeEmail}')">+ Grant</button>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" class="admin-empty">No users found.</td></tr>';
+}
+
+// Grant access button handler (reads select value at click time)
+window.adminGrantAccessFromRow = function(uid, selectId, email) {
+  const courseId = document.getElementById(selectId)?.value;
+  if (!courseId) return;
+  adminGrantAccess(uid, courseId, email);
+};
+
+window.adminSearchUsers = function(term) {
+  if (!term.trim()) { adminRenderUsers(_adminAllUsers); return; }
+  const t = term.toLowerCase();
+  adminRenderUsers(_adminAllUsers.filter(u =>
+    (u.email||'').toLowerCase().includes(t) ||
+    (u.username||'').toLowerCase().includes(t)
+  ));
 };
 
 // ESC closes admin + profile
@@ -5679,8 +5809,9 @@ document.addEventListener('keydown', e => {
       <button class="admin-close" onclick="closeAdmin()">✕</button>
     </div>
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('payments')">Payments</button>
-      <button class="admin-tab" onclick="switchAdminTab('users')">Users</button>
+      <button class="admin-tab active" data-tab="payments" onclick="switchAdminTab('payments')">Payments</button>
+      <button class="admin-tab" data-tab="users" onclick="switchAdminTab('users')">Users</button>
+      <button class="admin-tab" data-tab="access" onclick="switchAdminTab('access')">Course Access</button>
     </div>
     <!-- PAYMENTS PANEL -->
     <div class="admin-tab-panel active" id="adminPanel-payments">
@@ -5712,7 +5843,12 @@ document.addEventListener('keydown', e => {
     </div>
     <!-- USERS PANEL -->
     <div class="admin-tab-panel" id="adminPanel-users">
-      <button class="admin-refresh-btn" onclick="adminLoadUsers()">⟳ Refresh</button>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="admin-refresh-btn" style="margin-bottom:0;" onclick="adminLoadUsers()">⟳ Refresh</button>
+        <input type="text" placeholder="Search by name or email…" oninput="adminSearchUsers(this.value)"
+          style="flex:1;min-width:180px;padding:7px 13px;background:var(--surface);border:1px solid var(--border2);
+                 border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:.82rem;outline:none;">
+      </div>
       <div class="admin-table-wrap">
         <table class="admin-table">
           <thead>
@@ -5722,9 +5858,31 @@ document.addEventListener('keydown', e => {
               <th>Email</th>
               <th>Phone</th>
               <th>Role</th>
+              <th>Grant Access</th>
             </tr>
           </thead>
           <tbody id="adminUsersBody">
+            <tr><td colspan="6" class="admin-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COURSE ACCESS PANEL -->
+    <div class="admin-tab-panel" id="adminPanel-access">
+      <button class="admin-refresh-btn" onclick="adminLoadCourseAccess()">⟳ Refresh</button>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Approved</th>
+              <th>Email</th>
+              <th>Course</th>
+              <th>By</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminAccessBody">
             <tr><td colspan="5" class="admin-empty">Loading...</td></tr>
           </tbody>
         </table>
@@ -5765,6 +5923,16 @@ document.addEventListener('keydown', e => {
         <div class="profile-courses-title">My Courses</div>
         <div id="profileCoursesList">
           <div style="color:var(--text3);font-size:.82rem;padding:10px 0;">Loading...</div>
+        </div>
+      </div>
+      <!-- Community Links -->
+      <div class="profile-courses-section" style="margin-top:16px;">
+        <div class="profile-courses-title">Community</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <a href="https://t.me/Seven7FxAcademy" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);border-radius:10px;color:var(--text);text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s;" onmouseover="this.style.background='rgba(37,211,102,.15)'" onmouseout="this.style.background='rgba(37,211,102,.08)'">📱 Telegram</a>
+          <a href="https://www.instagram.com/seven77fx" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(225,48,108,.08);border:1px solid rgba(225,48,108,.2);border-radius:10px;color:var(--text);text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s;" onmouseover="this.style.background='rgba(225,48,108,.15)'" onmouseout="this.style.background='rgba(225,48,108,.08)'">📸 Instagram</a>
+          <a href="https://www.tiktok.com/@vptrader7" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--text);text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s;" onmouseover="this.style.background='rgba(0,0,0,.35)'" onmouseout="this.style.background='rgba(0,0,0,.2)'">🎵 TikTok</a>
+          <a href="https://www.youtube.com/@Seven77FX" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(255,0,0,.08);border:1px solid rgba(255,0,0,.2);border-radius:10px;color:var(--text);text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s;" onmouseover="this.style.background='rgba(255,0,0,.15)'" onmouseout="this.style.background='rgba(255,0,0,.08)'">▶ YouTube</a>
         </div>
       </div>
       <button class="profile-logout-btn" onclick="firebaseLogout();closeProfile();">Log Out</button>
