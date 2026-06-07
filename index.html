@@ -2493,6 +2493,200 @@ body::before {
 @media (max-width: 640px) {
   .tools-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ══ ADMIN DASHBOARD MODAL ══ */
+.admin-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,.85);
+  backdrop-filter: blur(10px);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px 16px; overflow-y: auto;
+}
+.admin-overlay.open { display: flex; }
+.admin-box {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  width: 100%; max-width: 900px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7);
+  margin: auto;
+}
+.admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(108,99,255,.07);
+}
+.admin-header-left { display:flex; align-items:center; gap:12px; }
+.admin-logo { font-family:var(--font-display); font-weight:800; font-size:1.1rem; }
+.admin-logo span { color:var(--accent); }
+.admin-badge {
+  font-size:.6rem; font-family:var(--font-mono); text-transform:uppercase;
+  letter-spacing:.12em; color:var(--gold);
+  border:1px solid rgba(251,191,36,.3); padding:2px 8px; border-radius:20px;
+}
+.admin-close {
+  background:none; border:none; color:var(--text2); font-size:1.2rem;
+  cursor:pointer; padding:6px; border-radius:8px; transition:all .2s;
+}
+.admin-close:hover { background:rgba(248,113,113,.1); color:var(--red); }
+.admin-tabs {
+  display:flex; gap:0; border-bottom:1px solid var(--border);
+}
+.admin-tab {
+  padding:12px 24px; font-size:.82rem; font-weight:600;
+  font-family:var(--font-body); color:var(--text2); background:none;
+  border:none; cursor:pointer; border-bottom:2px solid transparent;
+  transition:all .2s;
+}
+.admin-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.admin-tab-panel { display:none; padding:24px 28px; }
+.admin-tab-panel.active { display:block; }
+.admin-stats-row {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px;
+  margin-bottom:24px;
+}
+.admin-stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:16px;
+}
+.admin-stat-val {
+  font-family:var(--font-display); font-size:1.6rem; font-weight:800;
+  color:var(--accent); line-height:1;
+}
+.admin-stat-lbl {
+  font-size:.72rem; color:var(--text3); font-family:var(--font-mono);
+  text-transform:uppercase; letter-spacing:.08em; margin-top:4px;
+}
+.admin-table-wrap { overflow-x:auto; }
+.admin-table {
+  width:100%; border-collapse:collapse; font-size:.82rem;
+}
+.admin-table th {
+  text-align:left; padding:10px 12px;
+  font-size:.68rem; font-family:var(--font-mono);
+  text-transform:uppercase; letter-spacing:.1em;
+  color:var(--text3); border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+.admin-table td {
+  padding:12px 12px; border-bottom:1px solid rgba(255,255,255,.04);
+  color:var(--text2); vertical-align:middle;
+}
+.admin-table tr:hover td { background:rgba(108,99,255,.05); }
+.status-badge {
+  display:inline-block; padding:2px 10px; border-radius:20px;
+  font-size:.68rem; font-family:var(--font-mono); font-weight:600;
+  text-transform:uppercase; letter-spacing:.06em;
+}
+.status-pending  { background:rgba(251,191,36,.12);  color:#fbbf24; border:1px solid rgba(251,191,36,.3); }
+.status-approved { background:rgba(52,211,153,.12);  color:#34d399; border:1px solid rgba(52,211,153,.3); }
+.status-rejected { background:rgba(248,113,113,.12); color:#f87171; border:1px solid rgba(248,113,113,.3); }
+.admin-action-btn {
+  padding:4px 12px; border-radius:6px; font-size:.72rem;
+  font-family:var(--font-body); font-weight:600; cursor:pointer;
+  border:none; margin-right:4px; transition:all .2s;
+}
+.btn-approve { background:rgba(52,211,153,.15); color:#34d399; border:1px solid rgba(52,211,153,.3); }
+.btn-approve:hover { background:rgba(52,211,153,.3); }
+.btn-reject  { background:rgba(248,113,113,.1);  color:#f87171; border:1px solid rgba(248,113,113,.3); }
+.btn-reject:hover  { background:rgba(248,113,113,.25); }
+.admin-empty {
+  text-align:center; padding:40px; color:var(--text3);
+  font-size:.85rem;
+}
+.admin-refresh-btn {
+  padding:7px 16px; border-radius:8px; font-size:.78rem;
+  font-family:var(--font-body); font-weight:600; cursor:pointer;
+  background:rgba(108,99,255,.12); color:var(--accent);
+  border:1px solid rgba(108,99,255,.25); transition:all .2s;
+  margin-bottom:16px;
+}
+.admin-refresh-btn:hover { background:rgba(108,99,255,.22); }
+
+/* ══ USER PROFILE MODAL ══ */
+.profile-overlay {
+  position:fixed; inset:0; z-index:8000;
+  background:rgba(0,0,0,.8);
+  backdrop-filter:blur(10px);
+  display:none; align-items:center; justify-content:center;
+  padding:20px 16px;
+}
+.profile-overlay.open { display:flex; }
+.profile-box {
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:18px;
+  width:100%; max-width:520px;
+  padding:0; overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+}
+.profile-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 24px; border-bottom:1px solid var(--border);
+  background:rgba(108,99,255,.07);
+}
+.profile-header h3 {
+  font-family:var(--font-display); font-weight:800; font-size:1rem;
+}
+.profile-close {
+  background:none; border:none; color:var(--text2); font-size:1.2rem;
+  cursor:pointer; padding:6px; border-radius:8px; transition:all .2s;
+}
+.profile-close:hover { background:rgba(248,113,113,.1); color:var(--red); }
+.profile-body { padding:24px; }
+.profile-avatar-row {
+  display:flex; align-items:center; gap:16px; margin-bottom:24px;
+}
+.profile-avatar {
+  width:60px; height:60px; border-radius:50%;
+  background:var(--grad1);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:1.4rem; font-weight:800;
+  color:#fff; flex-shrink:0;
+}
+.profile-name { font-family:var(--font-display); font-weight:700; font-size:1.1rem; }
+.profile-email { font-size:.8rem; color:var(--text3); margin-top:2px; }
+.profile-role-badge {
+  font-size:.62rem; font-family:var(--font-mono); text-transform:uppercase;
+  letter-spacing:.1em; padding:2px 9px; border-radius:20px; margin-top:5px;
+  display:inline-block;
+}
+.profile-role-user  { background:rgba(108,99,255,.12); color:var(--accent); border:1px solid rgba(108,99,255,.25); }
+.profile-role-admin { background:rgba(251,191,36,.12); color:var(--gold); border:1px solid rgba(251,191,36,.3); }
+.profile-field {
+  margin-bottom:14px;
+}
+.profile-field label {
+  display:block; font-size:.7rem; font-family:var(--font-mono);
+  text-transform:uppercase; letter-spacing:.1em; color:var(--text3);
+  margin-bottom:5px;
+}
+.profile-field-val {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:10px 14px; font-size:.88rem; color:var(--text);
+}
+.profile-courses-section { margin-top:20px; }
+.profile-courses-title {
+  font-size:.7rem; font-family:var(--font-mono); text-transform:uppercase;
+  letter-spacing:.1em; color:var(--text3); margin-bottom:10px;
+}
+.profile-course-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; margin-bottom:8px;
+}
+.profile-course-name { font-size:.85rem; font-weight:600; }
+.profile-course-status { font-size:.72rem; font-family:var(--font-mono); }
+.profile-logout-btn {
+  width:100%; margin-top:20px; padding:12px;
+  background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.25);
+  color:var(--red); border-radius:10px; font-family:var(--font-body);
+  font-weight:600; font-size:.88rem; cursor:pointer; transition:all .2s;
+}
+.profile-logout-btn:hover { background:rgba(248,113,113,.18); }
 </style>
 </head>
 <body>
@@ -3550,16 +3744,16 @@ body::before {
       </div>
       <div id="signupForm">
         <div class="auth-field"><label>Full Name</label><input type="text" id="authName" placeholder="Your full name"></div>
-        <div class="auth-field"><label>Email Address</label><input type="email" id="authEmail" placeholder="your@email.com"></div>
+        <div class="auth-field"><label>Gmail Address</label><input type="email" id="authEmail" placeholder="yourname@gmail.com" autocomplete="email"><div style="font-size:.72rem;color:var(--text3);margin-top:4px;font-family:var(--font-mono);">⚠ Only @gmail.com accounts accepted</div></div>
         <div class="auth-field"><label>Phone Number</label><input type="tel" id="authPhone" placeholder="+251 9XX XXX XXXX"></div>
-        <div class="auth-field"><label>Password</label><input type="password" id="authPass" placeholder="Create a password (min 6 chars)"></div>
+        <div class="auth-field"><label>Password</label><input type="password" id="authPass" placeholder="Min 8 chars, letters &amp; numbers" oninput="sfxCheckPass(this.value)"><div id="passStrengthHint" style="font-size:.72rem;margin-top:5px;font-family:var(--font-mono);display:none;"></div></div>
         <div id="authErrSignup" style="display:none;color:var(--red);font-size:.8rem;margin-bottom:10px;padding:8px 12px;background:rgba(248,113,113,.08);border-radius:8px;border:1px solid rgba(248,113,113,.2);"></div>
         <button class="auth-btn-full" id="signupBtn" onclick="firebaseSignup()">Create Account →</button>
         <div class="auth-divider">or</div>
         <p style="font-size:.8rem;color:var(--text3);text-align:center;">Already have an account? <button onclick="switchTab('signin')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;">Sign In</button></p>
       </div>
       <div id="signinForm" style="display:none;">
-        <div class="auth-field"><label>Email Address</label><input type="email" id="siEmail" placeholder="your@email.com"></div>
+        <div class="auth-field"><label>Gmail Address</label><input type="email" id="siEmail" placeholder="yourname@gmail.com" autocomplete="email"></div>
         <div class="auth-field"><label>Password</label><input type="password" id="siPass" placeholder="Your password"></div>
         <div id="authErrSignin" style="display:none;color:var(--red);font-size:.8rem;margin-bottom:10px;padding:8px 12px;background:rgba(248,113,113,.08);border-radius:8px;border:1px solid rgba(248,113,113,.2);"></div>
         <button class="auth-btn-full" id="signinBtn" onclick="firebaseSignin()">Sign In →</button>
@@ -3741,13 +3935,13 @@ const paymentAccounts = {
   cbe: [
     { label: 'Bank', val: 'Commercial Bank of Ethiopia' },
     { label: 'Account Name', val: 'SevenFX Academy' },
-    { label: 'Account Number', val: '1000XXXXXXXXXX' },
+    { label: 'Account Number', val: '1000355263208' },
     { label: 'Amount', val: '—', id: 'payAmtCbe' },
   ],
   telebirr: [
     { label: 'Service', val: 'Telebirr' },
     { label: 'Name', val: 'SevenFX Academy' },
-    { label: 'Phone Number', val: '+251 9XX XXX XXXX' },
+    { label: 'Phone Number', val: '0913053057' },
     { label: 'Amount', val: '—', id: 'payAmtTele' },
   ],
   usdt: [
@@ -3913,6 +4107,27 @@ async function submitReceipt() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuth(); });
+
+// ── PASSWORD STRENGTH INDICATOR ──
+function sfxCheckPass(val) {
+  const hint = document.getElementById('passStrengthHint');
+  if (!hint) return;
+  if (!val) { hint.style.display = 'none'; return; }
+  hint.style.display = 'block';
+  const hasLen    = val.length >= 8;
+  const hasLetter = /[a-zA-Z]/.test(val);
+  const hasNum    = /[0-9]/.test(val);
+  const ok = hasLen && hasLetter && hasNum;
+  const checks = [
+    hasLen    ? '✓ 8+ characters' : '✗ 8+ characters',
+    hasLetter ? '✓ Letter'        : '✗ Letter',
+    hasNum    ? '✓ Number'        : '✗ Number',
+  ];
+  hint.innerHTML = checks.map((c,i) => {
+    const done = [hasLen, hasLetter, hasNum][i];
+    return `<span style="color:${done ? 'var(--green)' : 'var(--red)'};margin-right:10px;">${c}</span>`;
+  }).join('');
+}
 
 // ══════════════════════════════════════════
 // THEME — icon only
@@ -4816,7 +5031,7 @@ document.querySelectorAll('.course-card, .mentorship-card').forEach(el => observ
 ══════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ── Firebase Config ──────────────────────────────────────
@@ -4893,17 +5108,17 @@ function updateNavAuth(user, role) {
   if (!area) return;
   if (user) {
     const displayName = user.displayName || user.email.split('@')[0];
-    const roleLabel = role === 'admin'
-      ? '<span style="font-size:.65rem;color:var(--gold);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;margin-left:6px;">Admin</span>'
+    const adminBtn = role === 'admin'
+      ? `<button onclick="openAdmin()" style="padding:6px 13px;border-radius:30px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);color:var(--gold);font-size:.75rem;font-family:var(--font-body);font-weight:600;cursor:pointer;transition:all .2s;">⚙ Admin</button>`
       : '';
     area.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="display:flex;align-items:center;gap:7px;padding:6px 13px;background:var(--surface2);border:1px solid var(--border2);border-radius:30px;font-size:.82rem;color:var(--text);">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button onclick="openProfile()" style="display:flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;background:var(--surface2);border:1px solid var(--border2);border-radius:30px;font-size:.82rem;color:var(--text);cursor:pointer;font-family:var(--font-body);transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
           <span style="width:26px;height:26px;border-radius:50%;background:var(--grad1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0;">${displayName.charAt(0).toUpperCase()}</span>
-          <span style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
-          ${roleLabel}
-        </div>
-        <button onclick="firebaseLogout()" style="padding:7px 14px;border-radius:30px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.07);color:var(--red);font-size:.78rem;font-family:var(--font-body);font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(248,113,113,.14)'" onmouseout="this.style.background='rgba(248,113,113,.07)'">Log Out</button>
+          <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
+        </button>
+        ${adminBtn}
+        <button onclick="firebaseLogout()" style="padding:6px 13px;border-radius:30px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.07);color:var(--red);font-size:.75rem;font-family:var(--font-body);font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(248,113,113,.14)'" onmouseout="this.style.background='rgba(248,113,113,.07)'">Log Out</button>
       </div>`;
   } else {
     area.innerHTML = `<button class="nav-signup" onclick="openAuth('signup')">Sign Up</button>`;
@@ -4921,9 +5136,33 @@ window.firebaseSignup = async function() {
   const phone = (document.getElementById('authPhone')?.value || '').trim();
   const pass  = (document.getElementById('authPass')?.value || '');
 
-  if (!name)  { showAuthErr('authErrSignup', 'Please enter your full name.'); return; }
-  if (!email || !email.includes('@')) { showAuthErr('authErrSignup', 'Please enter a valid email address.'); return; }
-  if (!pass || pass.length < 6) { showAuthErr('authErrSignup', 'Password must be at least 6 characters.'); return; }
+  // ── Validation ──
+  if (!name) {
+    showAuthErr('authErrSignup', 'Please enter your full name.'); return;
+  }
+  // Gmail-only: must be a real @gmail.com address
+  if (!email) {
+    showAuthErr('authErrSignup', 'Please enter your Gmail address.'); return;
+  }
+  if (!email.toLowerCase().endsWith('@gmail.com')) {
+    showAuthErr('authErrSignup', 'Only Gmail accounts are accepted (e.g. yourname@gmail.com).'); return;
+  }
+  // Gmail local part rules: 6–30 chars, letters/numbers/dots only, no dots at start/end/consecutive
+  const gmailLocal = email.split('@')[0];
+  const gmailLocalRegex = /^[a-zA-Z0-9]([a-zA-Z0-9.]{4,28})[a-zA-Z0-9]$/;
+  if (!gmailLocalRegex.test(gmailLocal) || gmailLocal.includes('..')) {
+    showAuthErr('authErrSignup', 'Please enter a valid Gmail address.'); return;
+  }
+  // Password: min 8 chars, at least 1 letter, at least 1 number
+  if (!pass || pass.length < 8) {
+    showAuthErr('authErrSignup', 'Password must be at least 8 characters.'); return;
+  }
+  if (!/[a-zA-Z]/.test(pass)) {
+    showAuthErr('authErrSignup', 'Password must contain at least one letter.'); return;
+  }
+  if (!/[0-9]/.test(pass)) {
+    showAuthErr('authErrSignup', 'Password must contain at least one number.'); return;
+  }
 
   setBtn('signupBtn', 'Creating account…', true);
 
@@ -4949,13 +5188,21 @@ window.firebaseSignup = async function() {
     updateNavAuth(user, role);
     setBtn('signupBtn', 'Create Account →', false);
 
+    // Send email verification
+    try {
+      await sendEmailVerification(user);
+      console.log('[SevenFX] Verification email sent to:', email);
+    } catch(verErr) {
+      console.warn('[SevenFX] Could not send verification email:', verErr.message);
+    }
+
     // Show success modal then proceed to payment
     const btn = document.getElementById('signupBtn');
     if (btn) { btn.textContent = '✓ Account Created!'; btn.style.background = 'var(--green)'; btn.style.color = '#000'; }
     setTimeout(() => {
       showSuccessModal(
         'Account Created! 🎉',
-        'Welcome to SevenFX Academy! Your account has been created successfully. Proceeding to payment...',
+        'Welcome to SevenFX Academy! A verification email has been sent to ' + email + '. Please verify your email. Proceeding to payment...',
         '✓',
         'Proceed to Payment',
         () => { closeSuccessModal(); showAuthStep(2); }
@@ -4976,7 +5223,10 @@ window.firebaseSignin = async function() {
   const email = (document.getElementById('siEmail')?.value || '').trim();
   const pass  = (document.getElementById('siPass')?.value || '');
 
-  if (!email || !email.includes('@')) { showAuthErr('authErrSignin', 'Please enter a valid email address.'); return; }
+  if (!email) { showAuthErr('authErrSignin', 'Please enter your Gmail address.'); return; }
+  if (!email.toLowerCase().endsWith('@gmail.com')) {
+    showAuthErr('authErrSignin', 'Only Gmail accounts are accepted (e.g. yourname@gmail.com).'); return;
+  }
   if (!pass) { showAuthErr('authErrSignin', 'Please enter your password.'); return; }
 
   setBtn('signinBtn', 'Signing in…', true);
@@ -5176,6 +5426,326 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// ════════════════════════════════════════════════════════
+// USER PROFILE
+// ════════════════════════════════════════════════════════
+window.openProfile = async function() {
+  const user = auth.currentUser;
+  if (!user) return;
+  document.getElementById('profileOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  const name = user.displayName || user.email.split('@')[0];
+  document.getElementById('profileAvatar').textContent        = name.charAt(0).toUpperCase();
+  document.getElementById('profileName').textContent          = name;
+  document.getElementById('profileEmailDisplay').textContent  = user.email;
+  document.getElementById('profileEmailVal').textContent      = user.email;
+
+  const badge = document.getElementById('profileRoleBadge');
+  if (currentUserRole === 'admin') {
+    badge.textContent = '⚙ Admin';
+    badge.className   = 'profile-role-badge profile-role-admin';
+  } else {
+    badge.textContent = '✦ Member';
+    badge.className   = 'profile-role-badge profile-role-user';
+  }
+
+  // Firestore user doc
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const d = snap.data();
+      document.getElementById('profilePhoneVal').textContent  = d.phone || '—';
+      document.getElementById('profileJoinedVal').textContent = d.createdAt?.toDate
+        ? d.createdAt.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})
+        : '—';
+    }
+  } catch(e) {
+    document.getElementById('profilePhoneVal').textContent  = '—';
+    document.getElementById('profileJoinedVal').textContent = '—';
+  }
+
+  // Enrolled courses
+  const approved = await loadUserCourses(user.uid);
+  const courseNames = {
+    beginner:'Beginner Trading Course', intermediate:'Intermediate Trading Course',
+    advanced:'Advanced Trading Course', propfirm:'Prop Firm Trading Program',
+  };
+  const enrolled = ['beginner','intermediate','advanced','propfirm'].filter(id => approved[id]);
+  const courseList = document.getElementById('profileCoursesList');
+
+  let listHTML = enrolled.length === 0
+    ? `<div style="color:var(--text3);font-size:.82rem;padding:10px 0;text-align:center;">No courses enrolled yet.<br>
+         <button onclick="closeProfile();document.getElementById('learning').scrollIntoView({behavior:'smooth'});"
+           style="margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:8px;
+                  padding:7px 16px;font-family:var(--font-body);font-size:.8rem;cursor:pointer;font-weight:600;">
+           Browse Courses
+         </button></div>`
+    : enrolled.map(id => `
+        <div class="profile-course-item">
+          <div class="profile-course-name">📚 ${courseNames[id]}</div>
+          <span class="status-badge status-approved">✓ Enrolled</span>
+        </div>`).join('');
+
+  // Pending payments
+  try {
+    const pq   = query(collection(db,'payments'), where('uid','==',user.uid), where('status','==','pending'));
+    const pSnap = await getDocs(pq);
+    pSnap.forEach(d => {
+      listHTML += `<div class="profile-course-item">
+        <div class="profile-course-name">⏳ ${d.data().courseName || d.data().courseId}</div>
+        <span class="status-badge status-pending">Pending Review</span>
+      </div>`;
+    });
+  } catch(e) {}
+
+  courseList.innerHTML = listHTML;
+};
+
+window.closeProfile = function() {
+  document.getElementById('profileOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+window.profileOverlayClick = function(e) {
+  if (e.target.id === 'profileOverlay') closeProfile();
+};
+
+// ════════════════════════════════════════════════════════
+// ADMIN DASHBOARD
+// ════════════════════════════════════════════════════════
+let _adminCurrentTab = 'payments';
+
+window.openAdmin = async function() {
+  if (currentUserRole !== 'admin') return;
+  document.getElementById('adminOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  await adminLoadPayments();
+};
+window.closeAdmin = function() {
+  document.getElementById('adminOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+};
+window.adminOverlayClick = function(e) {
+  if (e.target.id === 'adminOverlay') closeAdmin();
+};
+window.switchAdminTab = function(tab) {
+  _adminCurrentTab = tab;
+  document.querySelectorAll('.admin-tab').forEach((t,i) => {
+    t.classList.toggle('active',(i===0&&tab==='payments')||(i===1&&tab==='users'));
+  });
+  document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('adminPanel-' + tab);
+  if (panel) panel.classList.add('active');
+  if (tab === 'payments') adminLoadPayments();
+  else adminLoadUsers();
+};
+
+// Load all payments (sorted newest first)
+window.adminLoadPayments = async function() {
+  const tbody = document.getElementById('adminPaymentsBody');
+  tbody.innerHTML = '<tr><td colspan="7" class="admin-empty">Loading…</td></tr>';
+  try {
+    const { orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
+    let total=0, pending=0, approved=0, rejected=0;
+    const rows = [];
+    snap.forEach(d => {
+      const data = d.data(); total++;
+      if (data.status==='pending')  pending++;
+      if (data.status==='approved') approved++;
+      if (data.status==='rejected') rejected++;
+      const date = data.submittedAt?.toDate
+        ? data.submittedAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+        : '—';
+      const approveBtn = data.status!=='approved'
+        ? `<button class="admin-action-btn btn-approve" onclick="adminUpdatePayment('${d.id}','${data.uid}','${data.courseId}','approved')">✓ Approve</button>`
+        : '';
+      const rejectBtn  = data.status!=='rejected'
+        ? `<button class="admin-action-btn btn-reject"  onclick="adminUpdatePayment('${d.id}','${data.uid}','${data.courseId}','rejected')">✕ Reject</button>`
+        : '';
+      rows.push(`<tr>
+        <td style="font-size:.75rem;white-space:nowrap;">${date}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;">${data.email||'—'}</td>
+        <td style="white-space:nowrap;font-size:.8rem;">${data.courseName||data.courseId||'—'}</td>
+        <td style="font-size:.8rem;">${data.paymentMethod||'—'}</td>
+        <td style="font-family:var(--font-mono);font-size:.74rem;">${data.txRef||'—'}</td>
+        <td><span class="status-badge status-${data.status||'pending'}">${data.status||'pending'}</span></td>
+        <td style="white-space:nowrap;">${approveBtn}${rejectBtn}</td>
+      </tr>`);
+    });
+    document.getElementById('statTotal').textContent    = total;
+    document.getElementById('statPending').textContent  = pending;
+    document.getElementById('statApproved').textContent = approved;
+    document.getElementById('statRejected').textContent = rejected;
+    tbody.innerHTML = rows.length
+      ? rows.join('')
+      : '<tr><td colspan="7" class="admin-empty">No payments yet.</td></tr>';
+  } catch(e) {
+    console.error('[Admin] Payments error:', e);
+    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+};
+
+// Approve or reject a payment
+window.adminUpdatePayment = async function(payDocId, uid, courseId, newStatus) {
+  try {
+    const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    await updateDoc(doc(db,'payments',payDocId), {
+      status:     newStatus,
+      reviewedAt: serverTimestamp(),
+      reviewedBy: auth.currentUser?.email || 'admin',
+    });
+    await adminLoadPayments();
+    // If the approved user is currently logged in, refresh their course UI live
+    if (newStatus==='approved' && auth.currentUser?.uid === uid) {
+      const courses = await loadUserCourses(uid);
+      applyCourseUI(courses);
+    }
+  } catch(e) {
+    console.error('[Admin] Update error:', e);
+    alert('Update failed: ' + e.message);
+  }
+};
+
+// Load all users
+window.adminLoadUsers = async function() {
+  const tbody = document.getElementById('adminUsersBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="admin-empty">Loading…</td></tr>';
+  try {
+    const { orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    const rows = [];
+    snap.forEach(d => {
+      const data = d.data();
+      const date = data.createdAt?.toDate
+        ? data.createdAt.toDate().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+        : '—';
+      rows.push(`<tr>
+        <td style="font-size:.75rem;white-space:nowrap;">${date}</td>
+        <td style="font-weight:600;">${data.username||'—'}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;">${data.email||'—'}</td>
+        <td style="font-family:var(--font-mono);font-size:.78rem;">${data.phone||'—'}</td>
+        <td><span class="status-badge ${data.role==='admin'?'status-approved':'status-pending'}">${data.role||'user'}</span></td>
+      </tr>`);
+    });
+    tbody.innerHTML = rows.length
+      ? rows.join('')
+      : '<tr><td colspan="5" class="admin-empty">No users found.</td></tr>';
+  } catch(e) {
+    console.error('[Admin] Users error:', e);
+    tbody.innerHTML = `<tr><td colspan="5" class="admin-empty" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+  }
+};
+
+// ESC closes admin + profile
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeAdmin?.(); closeProfile?.(); }
+});
+
 </script>
+
+<!-- ══ ADMIN DASHBOARD MODAL ══ -->
+<div class="admin-overlay" id="adminOverlay" onclick="adminOverlayClick(event)">
+  <div class="admin-box" id="adminBox">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <div class="admin-logo">SEVEN<span>FX</span></div>
+        <div class="admin-badge">Admin Dashboard</div>
+      </div>
+      <button class="admin-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('payments')">Payments</button>
+      <button class="admin-tab" onclick="switchAdminTab('users')">Users</button>
+    </div>
+    <!-- PAYMENTS PANEL -->
+    <div class="admin-tab-panel active" id="adminPanel-payments">
+      <div class="admin-stats-row" id="adminStatsRow">
+        <div class="admin-stat-card"><div class="admin-stat-val" id="statTotal">—</div><div class="admin-stat-lbl">Total Payments</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val" id="statPending">—</div><div class="admin-stat-lbl">Pending</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val" id="statApproved">—</div><div class="admin-stat-lbl">Approved</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val" id="statRejected">—</div><div class="admin-stat-lbl">Rejected</div></div>
+      </div>
+      <button class="admin-refresh-btn" onclick="adminLoadPayments()">⟳ Refresh</button>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Email</th>
+              <th>Course</th>
+              <th>Method</th>
+              <th>Ref</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminPaymentsBody">
+            <tr><td colspan="7" class="admin-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- USERS PANEL -->
+    <div class="admin-tab-panel" id="adminPanel-users">
+      <button class="admin-refresh-btn" onclick="adminLoadUsers()">⟳ Refresh</button>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Joined</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersBody">
+            <tr><td colspan="5" class="admin-empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ USER PROFILE MODAL ══ -->
+<div class="profile-overlay" id="profileOverlay" onclick="profileOverlayClick(event)">
+  <div class="profile-box" id="profileBox">
+    <div class="profile-header">
+      <h3>My Profile</h3>
+      <button class="profile-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="profile-body">
+      <div class="profile-avatar-row">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div>
+          <div class="profile-name" id="profileName">—</div>
+          <div class="profile-email" id="profileEmailDisplay">—</div>
+          <div class="profile-role-badge profile-role-user" id="profileRoleBadge">User</div>
+        </div>
+      </div>
+      <div class="profile-field">
+        <label>Email</label>
+        <div class="profile-field-val" id="profileEmailVal">—</div>
+      </div>
+      <div class="profile-field">
+        <label>Phone</label>
+        <div class="profile-field-val" id="profilePhoneVal">—</div>
+      </div>
+      <div class="profile-field">
+        <label>Member Since</label>
+        <div class="profile-field-val" id="profileJoinedVal">—</div>
+      </div>
+      <div class="profile-courses-section">
+        <div class="profile-courses-title">My Courses</div>
+        <div id="profileCoursesList">
+          <div style="color:var(--text3);font-size:.82rem;padding:10px 0;">Loading...</div>
+        </div>
+      </div>
+      <button class="profile-logout-btn" onclick="firebaseLogout();closeProfile();">Log Out</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
