@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SevenFX — My Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #07091e;
+  --bg2:     #0d1035;
+  --bg3:     #12164a;
+  --surface: rgba(255,255,255,0.055);
+  --surface2:rgba(255,255,255,0.10);
+  --border:  rgba(100,120,255,0.12);
+  --border2: rgba(120,140,255,0.22);
+  --accent:  #6c63ff;
+  --accent2: #4f46e5;
+  --accent3: #00d4ff;
+  --gold:    #fbbf24;
+  --text:    #f0f4ff;
+  --text2:   #a0aed8;
+  --text3:   #4a5890;
+  --red:     #f87171;
+  --green:   #34d399;
+  --purple:  #a78bfa;
+  --font-display:'Syne',sans-serif;
+  --font-body:   'DM Sans',sans-serif;
+  --font-mono:   'DM Mono',monospace;
+  --radius:  12px;
+  --radius2: 20px;
+  --glow:    0 0 60px rgba(108,99,255,0.30);
+  --shadow:  0 24px 64px rgba(0,0,0,0.65);
+  --grad1:   linear-gradient(135deg,#6c63ff,#00d4ff);
+  --grad2:   linear-gradient(135deg,#00d4ff,#6c63ff,#a78bfa);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+a { color:inherit; text-decoration:none; }
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--accent2); border-radius:3px; }
+
+/* ── LOADING SCREEN ── */
+#loadScreen {
+  position:fixed; inset:0; z-index:9999;
+  background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:20px;
+  transition:opacity .5s, visibility .5s;
+}
+#loadScreen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.load-logo {
+  font-family:var(--font-display);
+  font-size:2rem; font-weight:800; letter-spacing:.1em;
+}
+.load-logo span { color:var(--accent); text-shadow:0 0 20px rgba(108,99,255,.6); }
+.load-bar {
+  width:160px; height:2px;
+  background:var(--surface2);
+  border-radius:2px; overflow:hidden;
+}
+.load-bar-inner {
+  height:100%;
+  background:var(--grad1);
+  animation:loadBar 1.8s ease-in-out forwards;
+}
+@keyframes loadBar { from{width:0} to{width:100%} }
+.load-txt { font-size:.8rem; color:var(--text3); font-family:var(--font-mono); }
+
+/* ── AUTH GATE (shown if not logged in) ── */
+#authGate {
+  display:none;
+  position:fixed; inset:0; z-index:8888;
+  background:var(--bg);
+  align-items:center; justify-content:center;
+  flex-direction:column; gap:24px;
+  text-align:center; padding:24px;
+}
+#authGate.show { display:flex; }
+.gate-logo { font-family:var(--font-display); font-size:1.8rem; font-weight:800; }
+.gate-logo span { color:var(--accent); }
+.gate-title { font-size:1.4rem; font-weight:700; }
+.gate-sub { color:var(--text2); font-size:.9rem; }
+.gate-btn {
+  background:var(--grad1);
+  color:#fff; border:none; padding:12px 32px;
+  border-radius:10px; font-weight:700; cursor:pointer;
+  font-family:var(--font-body); font-size:1rem;
+  box-shadow:0 4px 18px rgba(108,99,255,.35);
+  transition:all .2s;
+}
+.gate-btn:hover { opacity:.9; transform:translateY(-1px); }
+
+/* ── INACTIVITY WARNING ── */
+#inactivityWarn {
+  display:none;
+  position:fixed; inset:0; z-index:9900;
+  background:rgba(0,0,0,.75);
+  align-items:center; justify-content:center;
+}
+#inactivityWarn.show { display:flex; }
+.inact-box {
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius2);
+  padding:36px 40px;
+  text-align:center; max-width:380px; width:90%;
+}
+.inact-box h3 { font-family:var(--font-display); margin-bottom:10px; font-size:1.1rem; }
+.inact-box p { color:var(--text2); font-size:.88rem; margin-bottom:20px; }
+.inact-countdown { font-family:var(--font-mono); font-size:2.5rem; font-weight:700; color:var(--gold); margin-bottom:20px; }
+.inact-stay-btn {
+  background:var(--grad1); color:#fff; border:none;
+  padding:10px 28px; border-radius:9px; font-weight:700;
+  font-family:var(--font-body); cursor:pointer; font-size:.95rem;
+}
+
+/* ── TOP NAV ── */
+.dash-nav {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  height:64px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px;
+  background:rgba(5,7,20,0.94);
+  backdrop-filter:blur(28px);
+  border-bottom:1px solid rgba(108,99,255,0.18);
+}
+.dash-nav-logo {
+  font-family:var(--font-display);
+  font-size:1.35rem; font-weight:800; letter-spacing:.05em;
+  display:flex; align-items:center; gap:10px;
+}
+.dash-nav-logo span { color:var(--accent); text-shadow:0 0 20px rgba(108,99,255,.5); }
+.dash-badge {
+  font-family:var(--font-mono); font-size:.65rem; font-weight:500;
+  color:var(--accent); background:rgba(108,99,255,.1);
+  border:1px solid rgba(108,99,255,.25); border-radius:6px;
+  padding:3px 8px; letter-spacing:.08em; text-transform:uppercase;
+}
+.dash-nav-right {
+  display:flex; align-items:center; gap:10px;
+}
+.nav-user-chip {
+  display:flex; align-items:center; gap:7px;
+  padding:4px 12px 4px 5px;
+  background:var(--surface2); border:1px solid var(--border2);
+  border-radius:30px; cursor:pointer; font-size:.82rem;
+  transition:all .2s;
+}
+.nav-user-chip:hover { border-color:var(--accent); }
+.nav-avatar {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--grad1);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:.75rem; color:#fff; flex-shrink:0;
+}
+.nav-icon-btn {
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text2); padding:6px 12px; border-radius:8px;
+  cursor:pointer; font-size:.78rem; font-family:var(--font-body);
+  font-weight:500; transition:all .2s; display:flex; align-items:center; gap:5px;
+}
+.nav-icon-btn:hover { border-color:var(--accent); color:var(--accent); }
+.nav-icon-btn.logout-btn { border-color:rgba(248,113,113,.3); color:var(--red); }
+.nav-icon-btn.logout-btn:hover { background:rgba(248,113,113,.1); border-color:var(--red); }
+
+/* ── TICKER ── */
+.dash-ticker {
+  position:fixed; top:64px; left:0; right:0; z-index:999;
+  background:rgba(7,11,20,0.95);
+  border-bottom:1px solid var(--border);
+  overflow:hidden; height:36px;
+}
+.ticker-track {
+  display:flex; gap:0;
+  animation:ticker 40s linear infinite;
+  white-space:nowrap; height:100%; align-items:center;
+}
+.ticker-track:hover { animation-play-state:paused; }
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-item {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:0 24px; font-family:var(--font-mono); font-size:.75rem;
+  border-right:1px solid var(--border);
+}
+.ticker-sym { color:var(--text2); font-weight:500; }
+.ticker-price { color:var(--text); font-weight:600; }
+.ticker-chg.up { color:var(--green); }
+.ticker-chg.dn { color:var(--red); }
+.ticker-dot { width:6px; height:6px; border-radius:50%; animation:pulse 1.5s infinite; }
+.ticker-dot.up { background:var(--green); }
+.ticker-dot.dn { background:var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── MAIN LAYOUT ── */
+.dash-layout {
+  display:flex; min-height:100vh;
+  padding-top:100px; /* nav + ticker */
+}
+
+/* ── SIDEBAR ── */
+.dash-sidebar {
+  width:240px; flex-shrink:0;
+  position:fixed; left:0; top:100px; bottom:30px;
+  overflow-y:auto; overflow-x:hidden;
+  padding:20px 0 20px;
+  border-right:1px solid var(--border);
+  background:rgba(13,16,53,0.6);
+  backdrop-filter:blur(12px);
+  scrollbar-width:thin;
+}
+.sidebar-section-label {
+  font-family:var(--font-mono); font-size:.62rem; font-weight:500;
+  color:var(--text3); text-transform:uppercase; letter-spacing:.12em;
+  padding:10px 20px 6px; margin-top:8px;
+}
+.sidebar-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 20px; cursor:pointer;
+  font-size:.85rem; font-weight:500; color:var(--text2);
+  transition:all .15s; border-left:2px solid transparent;
+  text-decoration:none;
+}
+.sidebar-item:hover { color:var(--text); background:rgba(108,99,255,.07); border-left-color:rgba(108,99,255,.4); }
+.sidebar-item.active { color:var(--accent); background:rgba(108,99,255,.1); border-left-color:var(--accent); }
+.sidebar-item .si-icon { font-size:1rem; width:20px; text-align:center; flex-shrink:0; }
+.sidebar-divider { height:1px; background:var(--border); margin:10px 16px; }
+
+/* ── MAIN CONTENT ── */
+.dash-main {
+  margin-left:240px;
+  flex:1; padding:28px 32px 60px;
+  min-width:0;
+}
+
+/* ── SECTION VISIBILITY ── */
+.dash-section { display:none; }
+.dash-section.active { display:block; }
+
+/* ── PAGE TITLE ── */
+.page-title {
+  font-family:var(--font-display);
+  font-size:1.6rem; font-weight:800; margin-bottom:4px;
+}
+.page-sub { color:var(--text2); font-size:.88rem; margin-bottom:28px; }
+
+/* ── STAT CARDS ── */
+.stat-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:16px; margin-bottom:28px;
+}
+.stat-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:20px 22px;
+  transition:all .25s;
+  position:relative; overflow:hidden;
+}
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--grad1);
+}
+.stat-card:hover { border-color:var(--border2); transform:translateY(-2px); box-shadow:var(--glow); }
+.stat-val {
+  font-family:var(--font-display); font-size:1.9rem; font-weight:800;
+  line-height:1; margin-bottom:4px;
+  background:var(--grad1); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.stat-lbl { font-size:.78rem; color:var(--text3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; }
+
+/* ── CARD ── */
+.card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:24px; margin-bottom:20px;
+  transition:border-color .2s;
+}
+.card:hover { border-color:var(--border2); }
+.card-title {
+  font-family:var(--font-display); font-weight:700; font-size:1rem;
+  margin-bottom:16px; display:flex; align-items:center; gap:8px;
+}
+.card-title .ct-icon { font-size:1.1rem; }
+
+/* ── STATUS BADGES ── */
+.badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:20px;
+  font-size:.72rem; font-weight:600; font-family:var(--font-mono);
+  text-transform:uppercase; letter-spacing:.05em;
+}
+.badge-approved { background:rgba(52,211,153,.1); color:var(--green); border:1px solid rgba(52,211,153,.25); }
+.badge-pending  { background:rgba(251,191,36,.1);  color:var(--gold);  border:1px solid rgba(251,191,36,.25); }
+.badge-rejected { background:rgba(248,113,113,.1); color:var(--red);   border:1px solid rgba(248,113,113,.25); }
+.badge-locked   { background:rgba(74,88,144,.12);  color:var(--text3); border:1px solid rgba(74,88,144,.25); }
+.badge-active   { background:rgba(0,212,255,.08);  color:var(--accent3); border:1px solid rgba(0,212,255,.2); }
+.badge-verified { background:rgba(108,99,255,.1); color:var(--accent); border:1px solid rgba(108,99,255,.25); }
+
+/* ── COURSE CARDS ── */
+.course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+.course-card-dash {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:22px; position:relative;
+  transition:all .25s; overflow:hidden;
+}
+.course-card-dash::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:var(--grad1); opacity:0; transition:opacity .25s;
+}
+.course-card-dash:hover { border-color:var(--border2); transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,.4); }
+.course-card-dash:hover::before { opacity:1; }
+.course-card-dash.locked { opacity:.6; }
+.course-icon { font-size:1.8rem; margin-bottom:10px; }
+.course-name { font-family:var(--font-display); font-weight:700; font-size:.95rem; margin-bottom:6px; }
+.course-desc { font-size:.8rem; color:var(--text2); margin-bottom:14px; line-height:1.5; }
+.course-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.course-price { font-family:var(--font-mono); font-size:.78rem; color:var(--text3); }
+.course-access-btn {
+  background:var(--grad1); color:#fff; border:none;
+  padding:7px 16px; border-radius:8px; font-size:.78rem; font-weight:700;
+  font-family:var(--font-body); cursor:pointer; transition:all .2s;
+}
+.course-access-btn:hover { opacity:.85; transform:translateY(-1px); }
+.course-access-btn:disabled { background:var(--surface2); color:var(--text3); cursor:not-allowed; transform:none; }
+
+/* ── SESSION MODULE ── */
+.sessions-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+.session-card {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); padding:18px 20px;
+  position:relative; overflow:hidden; transition:all .2s;
+}
+.session-card.open-session { border-color:rgba(52,211,153,.35); }
+.session-card.active-session { border-color:rgba(108,99,255,.5); box-shadow:0 0 20px rgba(108,99,255,.15); }
+.session-name { font-weight:700; font-size:.9rem; margin-bottom:4px; font-family:var(--font-display); }
+.session-time { font-family:var(--font-mono); font-size:.75rem; color:var(--text3); margin-bottom:10px; }
+.session-indicator {
+  width:8px; height:8px; border-radius:50%;
+  position:absolute; top:16px; right:16px;
+}
+.session-indicator.live { background:var(--green); animation:pulse 1.5s infinite; }
+.session-indicator.closed { background:var(--text3); }
+
+/* ── MARKET CARDS ── */
+.market-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.market-card {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px 18px; transition:all .2s;
+}
+.market-card:hover { border-color:var(--border2); }
+.market-sym { font-family:var(--font-mono); font-size:.75rem; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:4px; }
+.market-price { font-family:var(--font-mono); font-size:1.15rem; font-weight:700; margin-bottom:4px; }
+.market-chg { font-family:var(--font-mono); font-size:.78rem; font-weight:600; }
+.market-chg.up { color:var(--green); }
+.market-chg.dn { color:var(--red); }
+
+/* ── PROFILE FORM ── */
+.profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:640px) { .profile-grid { grid-template-columns:1fr; } }
+.form-field { display:flex; flex-direction:column; gap:6px; }
+.form-label { font-size:.78rem; color:var(--text3); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; }
+.form-input {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:9px; padding:10px 14px;
+  color:var(--text); font-family:var(--font-body); font-size:.9rem;
+  outline:none; transition:border-color .2s;
+}
+.form-input:focus { border-color:var(--accent); }
+.form-input:disabled { opacity:.5; cursor:not-allowed; }
+.form-input-readonly {
+  background:rgba(255,255,255,.03); border:1px solid rgba(100,120,255,.08);
+  border-radius:9px; padding:10px 14px;
+  color:var(--text2); font-family:var(--font-mono); font-size:.85rem;
+}
+.save-btn {
+  background:var(--grad1); color:#fff; border:none;
+  padding:11px 28px; border-radius:10px; font-weight:700;
+  font-family:var(--font-body); cursor:pointer; font-size:.9rem;
+  transition:all .2s; margin-top:8px;
+}
+.save-btn:hover { opacity:.9; transform:translateY(-1px); }
+
+/* ── AVATAR DISPLAY ── */
+.profile-avatar-section {
+  display:flex; align-items:center; gap:20px; margin-bottom:24px;
+  padding:20px; background:var(--surface); border-radius:var(--radius); border:1px solid var(--border);
+}
+.profile-avatar-big {
+  width:70px; height:70px; border-radius:50%;
+  background:var(--grad1);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:#fff; flex-shrink:0;
+  box-shadow:0 0 24px rgba(108,99,255,.35);
+}
+.profile-av-name { font-family:var(--font-display); font-size:1.1rem; font-weight:700; margin-bottom:4px; }
+.profile-av-email { font-size:.82rem; color:var(--text2); margin-bottom:8px; }
+
+/* ── DOWNLOAD ITEMS ── */
+.dl-list { display:flex; flex-direction:column; gap:10px; }
+.dl-item {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 16px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--radius);
+  transition:all .2s; cursor:pointer;
+}
+.dl-item:hover { border-color:var(--border2); background:var(--surface2); }
+.dl-icon { font-size:1.3rem; flex-shrink:0; width:32px; text-align:center; }
+.dl-info { flex:1; min-width:0; }
+.dl-name { font-weight:600; font-size:.88rem; margin-bottom:2px; }
+.dl-meta { font-size:.76rem; color:var(--text3); font-family:var(--font-mono); }
+.dl-btn {
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text2); padding:6px 14px; border-radius:7px;
+  font-size:.75rem; font-weight:600; cursor:pointer; font-family:var(--font-body);
+  transition:all .2s; flex-shrink:0;
+}
+.dl-btn:hover { border-color:var(--accent); color:var(--accent); }
+.dl-btn.locked { opacity:.5; cursor:not-allowed; }
+
+/* ── ACTIVITY TIMELINE ── */
+.timeline { display:flex; flex-direction:column; gap:0; }
+.tl-item {
+  display:flex; gap:14px; padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.tl-item:last-child { border-bottom:none; }
+.tl-dot {
+  width:10px; height:10px; border-radius:50%;
+  background:var(--accent); flex-shrink:0;
+  margin-top:5px; box-shadow:0 0 8px rgba(108,99,255,.4);
+}
+.tl-dot.gold { background:var(--gold); box-shadow:0 0 8px rgba(251,191,36,.4); }
+.tl-dot.green { background:var(--green); box-shadow:0 0 8px rgba(52,211,153,.4); }
+.tl-dot.red { background:var(--red); box-shadow:0 0 8px rgba(248,113,113,.4); }
+.tl-content { flex:1; min-width:0; }
+.tl-action { font-size:.88rem; font-weight:500; margin-bottom:2px; }
+.tl-time { font-size:.75rem; color:var(--text3); font-family:var(--font-mono); }
+
+/* ── NOTIFICATION PANEL ── */
+.notif-list { display:flex; flex-direction:column; gap:8px; }
+.notif-item {
+  display:flex; gap:12px; align-items:flex-start;
+  padding:12px 14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--radius);
+  transition:all .2s;
+}
+.notif-item.unread { border-color:rgba(108,99,255,.3); background:rgba(108,99,255,.04); }
+.notif-icon { font-size:1.1rem; flex-shrink:0; margin-top:1px; }
+.notif-body { flex:1; min-width:0; }
+.notif-text { font-size:.85rem; margin-bottom:2px; }
+.notif-time { font-size:.73rem; color:var(--text3); font-family:var(--font-mono); }
+.notif-unread-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--accent); flex-shrink:0; margin-top:5px;
+}
+
+/* ── TOOL CARDS ── */
+.tool-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.tool-card {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius2); padding:22px; transition:all .25s;
+  cursor:pointer;
+}
+.tool-card:hover { border-color:var(--border2); transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.4); }
+.tool-icon { font-size:1.8rem; margin-bottom:10px; }
+.tool-name { font-family:var(--font-display); font-weight:700; font-size:.9rem; margin-bottom:5px; }
+.tool-desc { font-size:.78rem; color:var(--text2); line-height:1.5; }
+
+/* ── SOCIAL LINKS ── */
+.social-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+.social-card {
+  display:flex; align-items:center; gap:12px;
+  padding:16px 18px; border-radius:var(--radius); border:1px solid var(--border);
+  transition:all .2s; cursor:pointer;
+}
+.social-card:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.3); }
+.social-icon { font-size:1.4rem; flex-shrink:0; }
+.social-name { font-weight:700; font-size:.88rem; margin-bottom:1px; }
+.social-handle { font-size:.76rem; color:var(--text3); font-family:var(--font-mono); }
+
+/* ── PLATFORM CARDS ── */
+.platform-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.platform-card {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius2); padding:22px; transition:all .25s;
+}
+.platform-card:hover { border-color:var(--border2); }
+.plat-logo { font-size:2rem; margin-bottom:10px; }
+.plat-name { font-family:var(--font-display); font-weight:700; font-size:.95rem; margin-bottom:5px; }
+.plat-desc { font-size:.78rem; color:var(--text2); margin-bottom:14px; line-height:1.5; }
+.plat-btn {
+  background:var(--surface2); border:1px solid var(--border2);
+  color:var(--text); padding:7px 16px; border-radius:8px;
+  font-size:.78rem; font-weight:600; cursor:pointer; font-family:var(--font-body);
+  transition:all .2s; display:inline-block;
+}
+.plat-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── MENTORSHIP CARDS ── */
+.mentorship-list { display:flex; flex-direction:column; gap:14px; }
+.mentorship-item {
+  display:flex; gap:18px; align-items:flex-start;
+  padding:20px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--radius2); transition:all .2s;
+}
+.mentorship-item:hover { border-color:var(--border2); }
+.mentor-icon { font-size:1.6rem; flex-shrink:0; }
+.mentor-title { font-family:var(--font-display); font-weight:700; font-size:.95rem; margin-bottom:4px; }
+.mentor-desc { font-size:.82rem; color:var(--text2); line-height:1.5; margin-bottom:12px; }
+.mentor-tag {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 9px; border-radius:6px; font-size:.72rem; font-weight:600;
+  background:rgba(108,99,255,.1); color:var(--accent); border:1px solid rgba(108,99,255,.2);
+  margin-right:6px;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap { background:var(--surface); border-radius:4px; height:6px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:var(--grad1); border-radius:4px; transition:width .6s ease; }
+
+/* ── ANNOUNCEMENT ── */
+.announcement-item {
+  display:flex; gap:14px; padding:16px 18px;
+  background:rgba(108,99,255,.05); border:1px solid rgba(108,99,255,.2);
+  border-radius:var(--radius); margin-bottom:10px;
+}
+.ann-icon { font-size:1.2rem; flex-shrink:0; }
+.ann-title { font-weight:700; font-size:.88rem; margin-bottom:3px; }
+.ann-body { font-size:.82rem; color:var(--text2); line-height:1.5; }
+.ann-date { font-size:.72rem; color:var(--text3); font-family:var(--font-mono); margin-top:4px; }
+
+/* ── CHECKLIST TOOL ── */
+.cl-items { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.cl-row {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:11px 14px; border-radius:9px;
+  border:1px solid var(--border); cursor:pointer; transition:all .2s; user-select:none;
+}
+.cl-row.checked { background:rgba(52,211,153,.05); border-color:rgba(52,211,153,.25); }
+.cl-check {
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid var(--text3); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.cl-row.checked .cl-check { background:var(--green); border-color:var(--green); }
+.cl-label { font-weight:500; font-size:.88rem; }
+.cl-desc { font-size:.76rem; color:var(--text3); margin-top:2px; }
+.cl-result {
+  padding:14px 18px; border-radius:var(--radius);
+  border:1px solid var(--border); text-align:center;
+}
+
+/* ── DISCLAIMER ── */
+.dash-disclaimer {
+  position:fixed; bottom:0; left:0; right:0; z-index:200;
+  background:rgba(0,0,0,.85); border-top:1px solid var(--border);
+  overflow:hidden; height:30px; display:flex; align-items:center;
+}
+.disclaimer-track {
+  white-space:nowrap;
+  animation:disclaimerScroll 80s linear infinite;
+  font-size:.67rem; color:var(--text3);
+  font-family:var(--font-mono); letter-spacing:.04em;
+}
+@keyframes disclaimerScroll { 0%{transform:translateX(100vw)} 100%{transform:translateX(-100%)} }
+.disclaimer-track:hover { animation-play-state:paused; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .dash-sidebar { width:200px; }
+  .dash-main { margin-left:200px; padding:20px 18px 50px; }
+}
+@media(max-width:700px) {
+  .dash-sidebar { 
+    width:100%; height:auto; position:static; border-right:none;
+    border-bottom:1px solid var(--border); display:flex;
+    flex-wrap:wrap; padding:8px;
+    top:100px;
+  }
+  .sidebar-section-label { display:none; }
+  .sidebar-item { padding:8px 12px; border-left:none; border-radius:8px; font-size:.78rem; }
+  .sidebar-item.active { background:rgba(108,99,255,.18); }
+  .sidebar-divider { display:none; }
+  .dash-layout { flex-direction:column; padding-top:100px; }
+  .dash-main { margin-left:0; padding:16px 14px 50px; }
+  .profile-grid { grid-template-columns:1fr; }
+  .course-grid { grid-template-columns:1fr; }
+}
+@media(max-width:480px) {
+  .dash-nav { padding:0 14px; }
+  .dash-badge { display:none; }
+  .stat-grid { grid-template-columns:1fr 1fr; }
+}
+
+/* ── FADE IN ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.fade-up { animation:fadeUp .5s ease both; }
+
+/* ── MOBILE NAV TOGGLE ── */
+.mobile-sidebar-toggle {
+  display:none; background:var(--surface); border:1px solid var(--border);
+  color:var(--text2); width:36px; height:36px; border-radius:8px;
+  align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem;
+}
+@media(max-width:700px) { .mobile-sidebar-toggle { display:flex; } }
+@media(max-width:700px) { 
+  .dash-sidebar { display:none; }
+  .dash-sidebar.mob-open { display:flex; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOAD SCREEN -->
+<div id="loadScreen">
+  <div class="load-logo">SEVEN<span>FX</span></div>
+  <div class="load-bar"><div class="load-bar-inner"></div></div>
+  <div class="load-txt">Loading dashboard…</div>
+</div>
+
+<!-- AUTH GATE -->
+<div id="authGate">
+  <div class="gate-logo">SEVEN<span>FX</span></div>
+  <div class="gate-title">Dashboard Access</div>
+  <div class="gate-sub">Please sign in to access your dashboard.</div>
+  <button class="gate-btn" onclick="window.location.href='index.html'">Go to Main Website</button>
+</div>
+
+<!-- INACTIVITY WARNING -->
+<div id="inactivityWarn">
+  <div class="inact-box">
+    <h3>⚠ Still There?</h3>
+    <p>You've been inactive. You'll be logged out in:</p>
+    <div class="inact-countdown" id="inactCountdown">30</div>
+    <button class="inact-stay-btn" onclick="resetInactivity()">Stay Logged In</button>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="dash-nav">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()">☰</button>
+    <div class="dash-nav-logo">SEVEN<span>FX</span></div>
+    <div class="dash-badge">Dashboard</div>
+  </div>
+  <div class="dash-nav-right">
+    <div class="nav-user-chip" onclick="showSection('profile')">
+      <div class="nav-avatar" id="navAvatarChar">?</div>
+      <span id="navUsername" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+    </div>
+    <button class="nav-icon-btn" onclick="window.location.href='index.html'">← Website</button>
+    <button class="nav-icon-btn logout-btn" id="logoutBtn">Sign Out</button>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="dash-ticker">
+  <div class="ticker-track" id="dashTickerTrack"></div>
+</div>
+
+<!-- LAYOUT -->
+<div class="dash-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="sidebar-section-label">Overview</div>
+    <div class="sidebar-item active" onclick="showSection('overview')" data-section="overview">
+      <span class="si-icon">⬛</span> Dashboard
+    </div>
+    <div class="sidebar-item" onclick="showSection('profile')" data-section="profile">
+      <span class="si-icon">👤</span> My Profile
+    </div>
+    <div class="sidebar-item" onclick="showSection('notifications')" data-section="notifications">
+      <span class="si-icon">🔔</span> Notifications
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Learning</div>
+    <div class="sidebar-item" onclick="showSection('courses')" data-section="courses">
+      <span class="si-icon">📚</span> My Courses
+    </div>
+    <div class="sidebar-item" onclick="showSection('allcourses')" data-section="allcourses">
+      <span class="si-icon">🎓</span> All Courses
+    </div>
+    <div class="sidebar-item" onclick="showSection('downloads')" data-section="downloads">
+      <span class="si-icon">⬇</span> Downloads
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Trading</div>
+    <div class="sidebar-item" onclick="showSection('markets')" data-section="markets">
+      <span class="si-icon">📈</span> Live Markets
+    </div>
+    <div class="sidebar-item" onclick="showSection('sessions')" data-section="sessions">
+      <span class="si-icon">🕐</span> Session Times
+    </div>
+    <div class="sidebar-item" onclick="showSection('tools')" data-section="tools">
+      <span class="si-icon">🛠</span> Tools
+    </div>
+    <div class="sidebar-item" onclick="showSection('checklist')" data-section="checklist">
+      <span class="si-icon">✓</span> Trade Checklist
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Resources</div>
+    <div class="sidebar-item" onclick="showSection('platforms')" data-section="platforms">
+      <span class="si-icon">💻</span> Platforms
+    </div>
+    <div class="sidebar-item" onclick="showSection('mentorship')" data-section="mentorship">
+      <span class="si-icon">🧠</span> Mentorship
+    </div>
+    <div class="sidebar-item" onclick="showSection('socials')" data-section="socials">
+      <span class="si-icon">🌐</span> Community
+    </div>
+    <div class="sidebar-item" onclick="showSection('announcements')" data-section="announcements">
+      <span class="si-icon">📢</span> Announcements
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-item" onclick="window.location.href='index.html'" style="color:var(--accent3);">
+      <span class="si-icon">↗</span> Main Website
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <!-- ══ OVERVIEW ══ -->
+    <section class="dash-section active fade-up" id="sec-overview">
+      <div class="page-title">Welcome Back 👋</div>
+      <div class="page-sub" id="overviewWelcomeSub">Loading your dashboard…</div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-val" id="statCoursesOwned">—</div>
+          <div class="stat-lbl">Active Courses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statPayStatus">—</div>
+          <div class="stat-lbl">Payment Status</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statVerified">—</div>
+          <div class="stat-lbl">Account Status</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statMemberDays">—</div>
+          <div class="stat-lbl">Days as Member</div>
+        </div>
+      </div>
+
+      <!-- Announcements Quick -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📢</span> Announcements</div>
+        <div class="announcement-item">
+          <div class="ann-icon">🚀</div>
+          <div>
+            <div class="ann-title">SevenFX Advanced Program — Now Live</div>
+            <div class="ann-body">The Advanced Volume Profile course is now open for enrollment. Access advanced LVN expansion strategies and runner model execution frameworks.</div>
+            <div class="ann-date">June 2026</div>
+          </div>
+        </div>
+        <div class="announcement-item">
+          <div class="ann-icon">📅</div>
+          <div>
+            <div class="ann-title">Live Mentorship Session — This Week</div>
+            <div class="ann-body">Group mentorship session scheduled for members. Check the Mentorship section for details and booking.</div>
+            <div class="ann-date">June 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🕒</span> Recent Activity</div>
+        <div class="timeline" id="activityTimeline">
+          <div class="tl-item"><div class="tl-dot"></div><div class="tl-content"><div class="tl-action">Dashboard access</div><div class="tl-time" id="tl-now">just now</div></div></div>
+          <div class="tl-item"><div class="tl-dot green"></div><div class="tl-content"><div class="tl-action">Account verified</div><div class="tl-time">on sign-up</div></div></div>
+          <div class="tl-item"><div class="tl-dot gold"></div><div class="tl-content"><div class="tl-action">Profile created</div><div class="tl-time" id="tl-created">—</div></div></div>
+        </div>
+      </div>
+
+      <!-- Quick Market Overview -->
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📊</span> Live Market Snapshot</div>
+        <div class="market-grid" id="overviewMarkets"></div>
+      </div>
+    </section>
+
+    <!-- ══ PROFILE ══ -->
+    <section class="dash-section fade-up" id="sec-profile">
+      <div class="page-title">My Profile</div>
+      <div class="page-sub">Manage your account details</div>
+
+      <div class="card">
+        <div class="profile-avatar-section">
+          <div class="profile-avatar-big" id="profileBigAvatar">?</div>
+          <div>
+            <div class="profile-av-name" id="profileBigName">—</div>
+            <div class="profile-av-email" id="profileBigEmail">—</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <span class="badge badge-verified" id="profileVerBadge">Unverified</span>
+              <span class="badge badge-active" id="profileRoleBadge">User</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-top:4px;"><span class="ct-icon">✏</span> Edit Profile</div>
+        <div class="profile-grid">
+          <div class="form-field">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" id="editUsername" placeholder="Your display name">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-input" id="editPhone" placeholder="+1 234 567 8900">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Email Address</label>
+            <div class="form-input-readonly" id="editEmail">—</div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Member Since</label>
+            <div class="form-input-readonly" id="editJoined">—</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="save-btn" onclick="saveProfile()">💾 Save Changes</button>
+          <span id="profileSaveMsg" style="font-size:.82rem;color:var(--green);display:none;">✓ Profile updated</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📊</span> Account Status</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+          <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;">Verification</div>
+            <span class="badge badge-verified" id="profStatVerify">Checking…</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;">Active Courses</div>
+            <span class="badge badge-approved" id="profStatCourses">0</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;">Account Role</div>
+            <span class="badge badge-active" id="profStatRole">User</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="font-size:.75rem;color:var(--text3);margin-bottom:4px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;">Payment</div>
+            <span class="badge" id="profStatPay" style="background:rgba(74,88,144,.12);color:var(--text3);border:1px solid rgba(74,88,144,.25);">No Payments</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🛡</span> Approved Courses</div>
+        <div id="profileApprovedCourses">
+          <p style="color:var(--text3);font-size:.85rem;">Loading courses…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ NOTIFICATIONS ══ -->
+    <section class="dash-section fade-up" id="sec-notifications">
+      <div class="page-title">Notifications</div>
+      <div class="page-sub">Recent alerts and updates</div>
+      <div class="card">
+        <div class="notif-list">
+          <div class="notif-item unread">
+            <div class="notif-icon">🚀</div>
+            <div class="notif-body">
+              <div class="notif-text">Advanced Course is now available. Check All Courses to enroll.</div>
+              <div class="notif-time">June 5, 2026</div>
+            </div>
+            <div class="notif-unread-dot"></div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-icon">📅</div>
+            <div class="notif-body">
+              <div class="notif-text">Live mentorship session scheduled. Book your spot in the Mentorship section.</div>
+              <div class="notif-time">June 3, 2026</div>
+            </div>
+            <div class="notif-unread-dot"></div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon">✅</div>
+            <div class="notif-body">
+              <div class="notif-text">Your account was successfully created and verified.</div>
+              <div class="notif-time" id="notifJoinDate">—</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon">📚</div>
+            <div class="notif-body">
+              <div class="notif-text">New trading resources have been added to the Downloads section.</div>
+              <div class="notif-time">May 28, 2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ MY COURSES ══ -->
+    <section class="dash-section fade-up" id="sec-courses">
+      <div class="page-title">My Courses</div>
+      <div class="page-sub">Your enrolled and approved courses</div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">✅</span> Active / Approved</div>
+        <div id="myCourseApproved">
+          <p style="color:var(--text3);font-size:.85rem;">Loading…</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">⏳</span> Pending Approval</div>
+        <div id="myCoursePending">
+          <p style="color:var(--text3);font-size:.85rem;">Loading…</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">🔒</span> Locked Courses</div>
+        <p style="font-size:.83rem;color:var(--text2);margin-bottom:14px;">These courses require payment and admin approval to access.</p>
+        <div id="myCourseList"></div>
+      </div>
+    </section>
+
+    <!-- ══ ALL COURSES ══ -->
+    <section class="dash-section fade-up" id="sec-allcourses">
+      <div class="page-title">All Courses</div>
+      <div class="page-sub">Complete SevenFX curriculum — from fundamentals to advanced execution</div>
+      <div class="course-grid" id="allCoursesGrid"></div>
+    </section>
+
+    <!-- ══ DOWNLOADS ══ -->
+    <section class="dash-section fade-up" id="sec-downloads">
+      <div class="page-title">Download Center</div>
+      <div class="page-sub">Resources, PDFs, books and templates</div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📄</span> PDFs & Guides</div>
+        <div class="dl-list">
+          <div class="dl-item" onclick="dlClick('playbook')">
+            <div class="dl-icon">📋</div>
+            <div class="dl-info">
+              <div class="dl-name">SevenFX Trading Playbook</div>
+              <div class="dl-meta">PDF · Intraday Execution Framework</div>
+            </div>
+            <span class="badge badge-locked">Locked</span>
+          </div>
+          <div class="dl-item" onclick="dlClick('ops')">
+            <div class="dl-icon">📑</div>
+            <div class="dl-info">
+              <div class="dl-name">Trading Operations Manual</div>
+              <div class="dl-meta">PDF · Institutional Execution</div>
+            </div>
+            <span class="badge badge-locked">Locked</span>
+          </div>
+          <div class="dl-item" onclick="dlClick('execution')">
+            <div class="dl-icon">⚡</div>
+            <div class="dl-info">
+              <div class="dl-name">Trade Execution Model</div>
+              <div class="dl-meta">PDF · 3-Model Setup Framework</div>
+            </div>
+            <span class="badge badge-locked">Locked</span>
+          </div>
+          <div class="dl-item" onclick="dlClick('priority')">
+            <div class="dl-icon">🎯</div>
+            <div class="dl-info">
+              <div class="dl-name">Priority Framework</div>
+              <div class="dl-meta">PDF · Setup Grading System</div>
+            </div>
+            <span class="badge badge-locked">Locked</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📚</span> Trading Books</div>
+        <div class="dl-list">
+          <div class="dl-item">
+            <div class="dl-icon">📖</div>
+            <div class="dl-info">
+              <div class="dl-name">Prop Trader Secrets</div>
+              <div class="dl-meta">eBook · FundedNext · 102 pages</div>
+            </div>
+            <button class="dl-btn">Download</button>
+          </div>
+          <div class="dl-item">
+            <div class="dl-icon">🧠</div>
+            <div class="dl-info">
+              <div class="dl-name">Trading in the Zone — Mark Douglas</div>
+              <div class="dl-meta">Recommended Reading · Psychology</div>
+            </div>
+            <a href="https://www.amazon.com/s?k=trading+in+the+zone" target="_blank" class="dl-btn">Get Book</a>
+          </div>
+          <div class="dl-item">
+            <div class="dl-icon">📊</div>
+            <div class="dl-info">
+              <div class="dl-name">Market Wizards — Jack Schwager</div>
+              <div class="dl-meta">Recommended Reading · Strategy</div>
+            </div>
+            <a href="https://www.amazon.com/s?k=market+wizards" target="_blank" class="dl-btn">Get Book</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📝</span> Checklists & Templates</div>
+        <div class="dl-list">
+          <div class="dl-item" onclick="openChecklistTool()">
+            <div class="dl-icon">✓</div>
+            <div class="dl-info">
+              <div class="dl-name">SevenFX Pre-Trade Checklist</div>
+              <div class="dl-meta">Interactive Tool · 6-Point Verification</div>
+            </div>
+            <button class="dl-btn">Open Tool</button>
+          </div>
+          <div class="dl-item">
+            <div class="dl-icon">📓</div>
+            <div class="dl-info">
+              <div class="dl-name">Trade Journal Template</div>
+              <div class="dl-meta">Template · Log every trade</div>
+            </div>
+            <span class="badge badge-locked">Approved Users</span>
+          </div>
+          <div class="dl-item">
+            <div class="dl-icon">📐</div>
+            <div class="dl-info">
+              <div class="dl-name">Position Size Calculator Guide</div>
+              <div class="dl-meta">Guide · Risk % Based Sizing</div>
+            </div>
+            <span class="badge badge-locked">Approved Users</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ LIVE MARKETS ══ -->
+    <section class="dash-section fade-up" id="sec-markets">
+      <div class="page-title">Live Market Data</div>
+      <div class="page-sub">Real-time prices for SevenFX instruments — refreshes every 30s</div>
+      <div class="market-grid" id="marketsGrid" style="margin-bottom:20px;"></div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">ℹ</span> Instrument Notes</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="padding:12px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+            <div style="font-family:var(--font-mono);font-size:.75rem;color:var(--accent);margin-bottom:3px;">EURUSD</div>
+            <div style="font-size:.8rem;color:var(--text2);">Primary SevenFX instrument. London & NY session.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+            <div style="font-family:var(--font-mono);font-size:.75rem;color:var(--accent);margin-bottom:3px;">GBPUSD</div>
+            <div style="font-size:.8rem;color:var(--text2);">High volatility. Best during London open.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+            <div style="font-family:var(--font-mono);font-size:.75rem;color:var(--accent);margin-bottom:3px;">GBPJPY</div>
+            <div style="font-size:.8rem;color:var(--text2);">Volatile cross pair. Strong LVN reactions.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+            <div style="font-family:var(--font-mono);font-size:.75rem;color:var(--accent);margin-bottom:3px;">XAUUSD</div>
+            <div style="font-size:.8rem;color:var(--text2);">Gold. Wide stop required. High reward potential.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ SESSIONS ══ -->
+    <section class="dash-section fade-up" id="sec-sessions">
+      <div class="page-title">Trading Session Times</div>
+      <div class="page-sub" id="sessionCurrentTime">UTC+3 — Loading time…</div>
+
+      <div class="sessions-grid" id="sessionsGrid"></div>
+
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title"><span class="ct-icon">ℹ</span> SevenFX Session Rules</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="padding:10px 14px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.2);border-radius:9px;font-size:.85rem;color:var(--text2);">✅ <strong style="color:var(--text);">London Session</strong> — Active. Valid trading window.</div>
+          <div style="padding:10px 14px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.2);border-radius:9px;font-size:.85rem;color:var(--text2);">✅ <strong style="color:var(--text);">New York Session</strong> — Active. Valid trading window.</div>
+          <div style="padding:10px 14px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.2);border-radius:9px;font-size:.85rem;color:var(--text2);">✅ <strong style="color:var(--text);">London/NY Overlap</strong> — Highest institutional activity.</div>
+          <div style="padding:10px 14px;background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:.85rem;color:var(--text2);">⊘ <strong style="color:var(--text);">Tokyo Session</strong> — Inactive. No trades taken.</div>
+          <div style="padding:10px 14px;background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:.85rem;color:var(--text2);">⊘ <strong style="color:var(--text);">Sydney Session</strong> — Inactive. No trades taken.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ TOOLS ══ -->
+    <section class="dash-section fade-up" id="sec-tools">
+      <div class="page-title">Trading Tools</div>
+      <div class="page-sub">Calculators, frameworks and analysis utilities</div>
+      <div class="tool-grid">
+        <div class="tool-card" onclick="showSection('checklist')">
+          <div class="tool-icon">✅</div>
+          <div class="tool-name">Pre-Trade Checklist</div>
+          <div class="tool-desc">6-point setup verification. A+, A, or No-Trade grading system.</div>
+        </div>
+        <div class="tool-card" onclick="alert('Position size calculator — enter stop distance and risk % to calculate lot size.')">
+          <div class="tool-icon">🧮</div>
+          <div class="tool-name">Position Size Calculator</div>
+          <div class="tool-desc">Calculate exact lot size from 1% risk and structure-based stop distance.</div>
+        </div>
+        <div class="tool-card" onclick="showSection('sessions')">
+          <div class="tool-icon">🕐</div>
+          <div class="tool-name">Session Clock</div>
+          <div class="tool-desc">Live session status — London, New York, Tokyo, Sydney in UTC+3.</div>
+        </div>
+        <div class="tool-card" onclick="showSection('markets')">
+          <div class="tool-icon">📊</div>
+          <div class="tool-name">Market Watch</div>
+          <div class="tool-desc">Real-time prices for EURUSD, GBPUSD, GBPJPY, XAUUSD and more.</div>
+        </div>
+        <div class="tool-card" onclick="showSection('downloads')">
+          <div class="tool-icon">📥</div>
+          <div class="tool-name">Resource Library</div>
+          <div class="tool-desc">Access PDFs, trading books, checklists and framework templates.</div>
+        </div>
+        <div class="tool-card" onclick="window.open('https://www.tradingview.com/chart/?symbol=FX:EURUSD','_blank')">
+          <div class="tool-icon">📈</div>
+          <div class="tool-name">TradingView Chart</div>
+          <div class="tool-desc">Open EURUSD on TradingView for volume profile analysis.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ TRADE CHECKLIST ══ -->
+    <section class="dash-section fade-up" id="sec-checklist">
+      <div class="page-title">Pre-Trade Checklist</div>
+      <div class="page-sub">Complete all 6 conditions before entering any trade</div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">✓</span> Setup Verification</div>
+        <div class="cl-items" id="dashClItems"></div>
+        <div class="cl-result" id="dashClResult" style="border-color:var(--border);">
+          <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:800;margin-bottom:4px;" id="dashClGrade">—</div>
+          <div style="font-size:.9rem;font-weight:600;margin-bottom:8px;" id="dashClSetup">Select conditions above</div>
+          <div style="padding:10px 16px;border-radius:8px;font-size:.85rem;background:var(--surface);display:inline-block;" id="dashClAction">Awaiting input…</div>
+        </div>
+        <div style="text-align:right;margin-top:12px;">
+          <button class="nav-icon-btn" onclick="resetDashCL()" style="font-size:.8rem;">↺ Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PLATFORMS ══ -->
+    <section class="dash-section fade-up" id="sec-platforms">
+      <div class="page-title">Trading Platforms</div>
+      <div class="page-sub">Recommended brokers and platforms for SevenFX execution</div>
+      <div class="platform-grid">
+        <div class="platform-card">
+          <div class="plat-logo">📊</div>
+          <div class="plat-name">TradingView</div>
+          <div class="plat-desc">Volume profile charting, multi-timeframe analysis. Best for VWAP + LVN identification.</div>
+          <a class="plat-btn" href="https://www.tradingview.com" target="_blank">Open Platform ↗</a>
+        </div>
+        <div class="platform-card">
+          <div class="plat-logo">⚡</div>
+          <div class="plat-name">MetaTrader 4</div>
+          <div class="plat-desc">Industry-standard execution platform. Reliable for forex and gold execution.</div>
+          <a class="plat-btn" href="https://www.metatrader4.com" target="_blank">Download MT4 ↗</a>
+        </div>
+        <div class="platform-card">
+          <div class="plat-logo">🖥</div>
+          <div class="plat-name">MetaTrader 5</div>
+          <div class="plat-desc">Advanced platform with depth of market. Supports XAUUSD and all FX pairs.</div>
+          <a class="plat-btn" href="https://www.metatrader5.com" target="_blank">Download MT5 ↗</a>
+        </div>
+        <div class="platform-card">
+          <div class="plat-logo">🏆</div>
+          <div class="plat-name">FundedNext</div>
+          <div class="plat-desc">Prop firm challenge platform. Recommended for SevenFX institutional execution.</div>
+          <a class="plat-btn" href="https://fundednext.com" target="_blank">Visit Platform ↗</a>
+        </div>
+        <div class="platform-card">
+          <div class="plat-logo">💰</div>
+          <div class="plat-name">FTMO</div>
+          <div class="plat-desc">Established prop firm. Strict but fair evaluation with SevenFX-compatible rules.</div>
+          <a class="plat-btn" href="https://ftmo.com" target="_blank">Visit Platform ↗</a>
+        </div>
+        <div class="platform-card">
+          <div class="plat-logo">🔷</div>
+          <div class="plat-name">The5ers</div>
+          <div class="plat-desc">Swing-friendly funded accounts. Good for SevenFX low-frequency execution model.</div>
+          <a class="plat-btn" href="https://the5ers.com" target="_blank">Visit Platform ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ MENTORSHIP ══ -->
+    <section class="dash-section fade-up" id="sec-mentorship">
+      <div class="page-title">Mentorship</div>
+      <div class="page-sub">1-on-1 and group coaching with SevenFX</div>
+      <div class="mentorship-list">
+        <div class="mentorship-item">
+          <div class="mentor-icon">🎯</div>
+          <div>
+            <div class="mentor-title">1-on-1 Private Mentorship</div>
+            <div class="mentor-desc">Dedicated session reviewing your chart analysis, setup identification, and execution process. Live trade review and personal feedback on your performance data.</div>
+            <span class="mentor-tag">Private</span>
+            <span class="mentor-tag">Forex & Gold</span>
+            <span class="mentor-tag">Volume Profile</span>
+            <div style="margin-top:12px;">
+              <a href="https://t.me/Seven7FxAcademy" target="_blank" class="plat-btn">Book via Telegram ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="mentorship-item">
+          <div class="mentor-icon">👥</div>
+          <div>
+            <div class="mentor-title">Group Mentorship Sessions</div>
+            <div class="mentor-desc">Live market analysis sessions with the SevenFX community. LVN identification walkthroughs, session timing, and model selection in real time.</div>
+            <span class="mentor-tag">Group</span>
+            <span class="mentor-tag">Weekly</span>
+            <span class="mentor-tag">Live Markets</span>
+            <div style="margin-top:12px;">
+              <a href="https://t.me/Seven7FxAcademy" target="_blank" class="plat-btn">Join Telegram Group ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="mentorship-item">
+          <div class="mentor-icon">📱</div>
+          <div>
+            <div class="mentor-title">Trade Review & Feedback</div>
+            <div class="mentor-desc">Submit your trade screenshots and receive written analysis and feedback. Mistakes classified against the SevenFX error framework.</div>
+            <span class="mentor-tag">Async</span>
+            <span class="mentor-tag">All Levels</span>
+            <div style="margin-top:12px;">
+              <a href="https://www.instagram.com/seven77fx" target="_blank" class="plat-btn">DM on Instagram ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ COMMUNITY ══ -->
+    <section class="dash-section fade-up" id="sec-socials">
+      <div class="page-title">Community & Social</div>
+      <div class="page-sub">Join the SevenFX community across all platforms</div>
+      <div class="social-grid" style="margin-bottom:20px;">
+        <a class="social-card" href="https://t.me/Seven7FxAcademy" target="_blank" style="background:rgba(37,211,102,.06);border-color:rgba(37,211,102,.2);">
+          <div class="social-icon">📱</div>
+          <div><div class="social-name">Telegram</div><div class="social-handle">@Seven7FxAcademy</div></div>
+        </a>
+        <a class="social-card" href="https://www.instagram.com/seven77fx" target="_blank" style="background:rgba(225,48,108,.06);border-color:rgba(225,48,108,.2);">
+          <div class="social-icon">📸</div>
+          <div><div class="social-name">Instagram</div><div class="social-handle">@seven77fx</div></div>
+        </a>
+        <a class="social-card" href="https://www.tiktok.com/@vptrader7" target="_blank" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);">
+          <div class="social-icon">🎵</div>
+          <div><div class="social-name">TikTok</div><div class="social-handle">@vptrader7</div></div>
+        </a>
+        <a class="social-card" href="https://www.youtube.com/@Seven77FX" target="_blank" style="background:rgba(255,0,0,.06);border-color:rgba(255,0,0,.18);">
+          <div class="social-icon">▶</div>
+          <div><div class="social-name">YouTube</div><div class="social-handle">@Seven77FX</div></div>
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="ct-icon">📢</span> Why Join the Community?</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:.85rem;color:var(--text2);">📊 Daily market analysis and LVN level sharing</div>
+          <div style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:.85rem;color:var(--text2);">🎯 Setup alerts before London and New York opens</div>
+          <div style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:.85rem;color:var(--text2);">👥 Community accountability and trade review</div>
+          <div style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:.85rem;color:var(--text2);">📚 Exclusive educational content and updates</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ ANNOUNCEMENTS ══ -->
+    <section class="dash-section fade-up" id="sec-announcements">
+      <div class="page-title">Announcements</div>
+      <div class="page-sub">Official updates from SevenFX</div>
+      <div class="announcement-item">
+        <div class="ann-icon">🚀</div>
+        <div>
+          <div class="ann-title">Advanced Program Now Live — June 2026</div>
+          <div class="ann-body">The SevenFX Advanced Volume Profile course is now open. Covers advanced LVN expansion strategies, runner model activation criteria, and multi-pair correlation execution. Available to all approved members.</div>
+          <div class="ann-date">June 1, 2026</div>
+        </div>
+      </div>
+      <div class="announcement-item">
+        <div class="ann-icon">📅</div>
+        <div>
+          <div class="ann-title">Weekly Group Session — Every Thursday</div>
+          <div class="ann-body">Live market analysis sessions are now scheduled every Thursday during the London session. Join via Telegram to attend. LVN identification, session timing, and model selection covered live.</div>
+          <div class="ann-date">May 30, 2026</div>
+        </div>
+      </div>
+      <div class="announcement-item">
+        <div class="ann-icon">🛠</div>
+        <div>
+          <div class="ann-title">Dashboard System Launched</div>
+          <div class="ann-body">The SevenFX member dashboard is now live. Access your courses, download resources, check live market data, and track your session times — all in one place.</div>
+          <div class="ann-date">May 28, 2026</div>
+        </div>
+      </div>
+      <div class="announcement-item">
+        <div class="ann-icon">📚</div>
+        <div>
+          <div class="ann-title">Trading Playbook & Operations Manual — Updated</div>
+          <div class="ann-body">All SevenFX proprietary documents have been updated to the 2026 Edition. Download available in the Downloads section for approved members.</div>
+          <div class="ann-date">May 28, 2026</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- DISCLAIMER -->
+<div class="dash-disclaimer">
+  <div class="disclaimer-track">⚠ Trading involves substantial risk of loss and is not suitable for all investors. Past performance does not guarantee future results. All SevenFX content is for educational purposes only and does not constitute financial advice. SevenFX is not a licensed financial advisor. Always consult a qualified financial professional before making trading decisions. Capital at risk. &nbsp;&nbsp;&nbsp;&nbsp; ⚠ Trading involves substantial risk of loss and is not suitable for all investors. Past performance does not guarantee future results. All SevenFX content is for educational purposes only and does not constitute financial advice. SevenFX is not a licensed financial advisor. Always consult a qualified financial professional before making trading decisions. Capital at risk.</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FIREBASE MODULE
+═══════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, updateProfile, browserLocalPersistence, setPersistence }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDozcA-cfejrnyx5yF2lW1w1_cjlgZWv1Q",
+  authDomain: "sevenfx.firebaseapp.com",
+  projectId: "sevenfx",
+  storageBucket: "sevenfx.firebasestorage.app",
+  messagingSenderId: "665447101397",
+  appId: "1:665447101397:web:338eb69a6cf8a670ad035c"
+};
+
+let app, auth, db;
+try {
+  app  = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db   = getFirestore(app);
+  setPersistence(auth, browserLocalPersistence).catch(()=>{});
+} catch(e) { console.error('Firebase init failed:', e); }
+
+const COURSE_INFO = {
+  beginner:     { name:'Beginner Course',     price:'$97',  icon:'📗', desc:'Foundations of price action, market structure, and the SevenFX LVN framework.' },
+  intermediate: { name:'Intermediate Course', price:'$197', icon:'📘', desc:'Volume Profile deep-dive — VAH/VAL rotation, VWAP alignment, and model execution.' },
+  advanced:     { name:'Advanced Course',     price:'$297', icon:'📙', desc:'Advanced LVN expansion strategies, runner model, and multi-pair correlation execution.' },
+  propfirm:     { name:'Prop Firm Mastery',   price:'$147', icon:'🏆', desc:'Pass funded challenges using SevenFX rules. Drawdown management and evaluation strategy.' },
+};
+
+let currentUser = null;
+let userDoc     = null;
+let userCourses = [];
+let userPayments= [];
+
+// ── Auth State ──────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    document.getElementById('loadScreen').classList.add('hidden');
+    document.getElementById('authGate').classList.add('show');
+    return;
+  }
+  currentUser = user;
+  try {
+    userDoc = (await getDoc(doc(db,'users', user.uid))).data() || {};
+  } catch(e) { userDoc = {}; }
+
+  // Load courses
+  try {
+    const snap = await getDocs(query(collection(db,'courseAccess'), where('uid','==',user.uid)));
+    userCourses = [];
+    snap.forEach(d => { if(d.data().access===true) userCourses.push(d.data().courseId); });
+  } catch(e) { userCourses = []; }
+
+  // Load payments
+  try {
+    const paySnap = await getDocs(query(collection(db,'payments'), where('uid','==',user.uid)));
+    userPayments = [];
+    paySnap.forEach(d => userPayments.push(d.data()));
+  } catch(e) { userPayments = []; }
+
+  populateDashboard(user);
+  buildAllCoursesGrid();
+  buildMyCoursesSection();
+  buildProfileSection(user);
+  buildMarketsGrid();
+  buildSessionsGrid();
+  buildDashCL();
+  buildOverviewMarkets();
+  startMarketUpdates();
+  startSessionClock();
+  startInactivityTimer();
+
+  setTimeout(() => document.getElementById('loadScreen').classList.add('hidden'), 800);
+});
+
+// ── Populate Dashboard ──────────────────────────────────────
+function populateDashboard(user) {
+  const name = userDoc.displayName || user.displayName || user.email.split('@')[0];
+  const char = name.charAt(0).toUpperCase();
+
+  document.getElementById('navAvatarChar').textContent = char;
+  document.getElementById('navUsername').textContent   = name;
+  document.getElementById('overviewWelcomeSub').textContent = `Welcome back, ${name}. Here's your SevenFX overview.`;
+
+  // Stats
+  document.getElementById('statCoursesOwned').textContent = userCourses.length || '0';
+  const hasPay = userPayments.length > 0;
+  const lastPay = hasPay ? userPayments[userPayments.length-1] : null;
+  document.getElementById('statPayStatus').textContent = hasPay ? (lastPay.status==='approved'?'✓':'Pending') : '—';
+  document.getElementById('statVerified').textContent = user.emailVerified ? '✓' : '!';
+
+  const created = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : new Date();
+  const days = Math.floor((Date.now() - created.getTime()) / 86400000);
+  document.getElementById('statMemberDays').textContent = days;
+
+  // Activity
+  const tlCreated = document.getElementById('tl-created');
+  if(tlCreated) tlCreated.textContent = created.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const joinDateEl = document.getElementById('notifJoinDate');
+  if(joinDateEl) joinDateEl.textContent = created.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+// ── Profile Section ────────────────────────────────────────
+function buildProfileSection(user) {
+  const name  = userDoc.displayName || user.displayName || user.email.split('@')[0];
+  const email = user.email;
+  const phone = userDoc.phone || '—';
+  const created = user.metadata?.creationTime ? new Date(user.metadata.creationTime) : new Date();
+  const char  = name.charAt(0).toUpperCase();
+
+  document.getElementById('profileBigAvatar').textContent = char;
+  document.getElementById('profileBigName').textContent   = name;
+  document.getElementById('profileBigEmail').textContent  = email;
+
+  const verBadge = document.getElementById('profileVerBadge');
+  verBadge.textContent = user.emailVerified ? '✓ Verified' : '✕ Unverified';
+  verBadge.className = 'badge ' + (user.emailVerified ? 'badge-approved' : 'badge-rejected');
+  document.getElementById('profileRoleBadge').textContent = (userDoc.role==='admin') ? 'Admin' : 'Member';
+
+  document.getElementById('editUsername').value = name;
+  document.getElementById('editPhone').value    = phone === '—' ? '' : phone;
+  document.getElementById('editEmail').textContent  = email;
+  document.getElementById('editJoined').textContent = created.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+  const profStatVerify = document.getElementById('profStatVerify');
+  profStatVerify.textContent = user.emailVerified ? '✓ Verified' : '! Not Verified';
+  profStatVerify.className   = 'badge ' + (user.emailVerified ? 'badge-approved' : 'badge-rejected');
+
+  document.getElementById('profStatCourses').textContent = userCourses.length;
+  document.getElementById('profStatRole').textContent    = (userDoc.role==='admin') ? '⚙ Admin' : '👤 Member';
+
+  const payBadge = document.getElementById('profStatPay');
+  if(userPayments.length > 0) {
+    const last = userPayments[userPayments.length-1];
+    payBadge.textContent = last.status === 'approved' ? '✅ Approved' : last.status === 'pending' ? '⏳ Pending' : '✕ Rejected';
+    payBadge.className = 'badge badge-' + (last.status||'pending');
+  }
+
+  // Approved courses list
+  const approvedEl = document.getElementById('profileApprovedCourses');
+  if(userCourses.length === 0) {
+    approvedEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;">No approved courses yet. Enroll in All Courses to get started.</p>';
+  } else {
+    approvedEl.innerHTML = '<div class="dl-list">' + userCourses.map(cid => {
+      const ci = COURSE_INFO[cid] || { icon:'📚', name: cid };
+      return `<div class="dl-item">
+        <div class="dl-icon">${ci.icon}</div>
+        <div class="dl-info"><div class="dl-name">${ci.name}</div><div class="dl-meta">Active Access</div></div>
+        <span class="badge badge-approved">✓ Active</span>
+      </div>`;
+    }).join('') + '</div>';
+  }
+}
+
+// ── Save Profile ──────────────────────────────────────────
+window.saveProfile = async function() {
+  if(!currentUser) return;
+  const newName  = document.getElementById('editUsername').value.trim();
+  const newPhone = document.getElementById('editPhone').value.trim();
+  if(!newName) { alert('Username cannot be empty.'); return; }
+  try {
+    await updateProfile(currentUser, { displayName: newName });
+    await setDoc(doc(db,'users', currentUser.uid), {
+      displayName: newName,
+      phone:       newPhone || '',
+      updatedAt:   serverTimestamp(),
+    }, { merge: true });
+    userDoc.displayName = newName;
+    userDoc.phone       = newPhone;
+    document.getElementById('navUsername').textContent       = newName;
+    document.getElementById('navAvatarChar').textContent     = newName.charAt(0).toUpperCase();
+    document.getElementById('profileBigAvatar').textContent  = newName.charAt(0).toUpperCase();
+    document.getElementById('profileBigName').textContent    = newName;
+    const msg = document.getElementById('profileSaveMsg');
+    msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 3000);
+  } catch(e) { alert('Failed to save: ' + e.message); }
+};
+
+// ── My Courses Section ────────────────────────────────────
+function buildMyCoursesSection() {
+  // Approved
+  const approvedEl = document.getElementById('myCourseApproved');
+  if(userCourses.length === 0) {
+    approvedEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;">No approved courses yet.</p>';
+  } else {
+    approvedEl.innerHTML = '<div class="course-grid">' + userCourses.map(cid => {
+      const ci = COURSE_INFO[cid] || { icon:'📚', name:cid, desc:'', price:'—' };
+      return `<div class="course-card-dash">
+        <div class="course-icon">${ci.icon}</div>
+        <div class="course-name">${ci.name}</div>
+        <div class="course-desc">${ci.desc}</div>
+        <div class="course-footer">
+          <span class="badge badge-approved">✓ Active</span>
+          <button class="course-access-btn" onclick="openCourseContent('${cid}')">Access Course →</button>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // Pending
+  const pendingPays = userPayments.filter(p => p.status === 'pending');
+  const pendingEl = document.getElementById('myCoursePending');
+  if(pendingPays.length === 0) {
+    pendingEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;">No pending payments.</p>';
+  } else {
+    pendingEl.innerHTML = '<div class="course-grid">' + pendingPays.map(p => {
+      const ci = COURSE_INFO[p.courseId] || { icon:'📚', name: p.courseId };
+      return `<div class="course-card-dash">
+        <div class="course-icon">${ci.icon}</div>
+        <div class="course-name">${ci.name}</div>
+        <div class="course-desc">Payment submitted. Awaiting admin approval.</div>
+        <div class="course-footer"><span class="badge badge-pending">⏳ Pending</span></div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // Locked
+  const lockedEl = document.getElementById('myCourseList');
+  const locked = Object.keys(COURSE_INFO).filter(id => !userCourses.includes(id));
+  lockedEl.innerHTML = '<div class="course-grid">' + locked.map(cid => {
+    const ci = COURSE_INFO[cid];
+    const isPending = userPayments.some(p => p.courseId === cid && p.status === 'pending');
+    return `<div class="course-card-dash locked">
+      <div class="course-icon">${ci.icon}</div>
+      <div class="course-name">${ci.name}</div>
+      <div class="course-desc">${ci.desc}</div>
+      <div class="course-footer">
+        <span class="course-price">${ci.price}</span>
+        ${isPending
+          ? '<span class="badge badge-pending">⏳ Pending</span>'
+          : '<span class="badge badge-locked">🔒 Locked</span>'
+        }
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ── All Courses Grid ──────────────────────────────────────
+function buildAllCoursesGrid() {
+  const el = document.getElementById('allCoursesGrid');
+  el.innerHTML = Object.entries(COURSE_INFO).map(([cid, ci]) => {
+    const isApproved = userCourses.includes(cid);
+    const isPending  = userPayments.some(p => p.courseId === cid && p.status === 'pending');
+    const statusBadge = isApproved
+      ? '<span class="badge badge-approved">✓ Active</span>'
+      : isPending
+        ? '<span class="badge badge-pending">⏳ Pending</span>'
+        : '<span class="badge badge-locked">🔒 Locked</span>';
+    const btn = isApproved
+      ? `<button class="course-access-btn" onclick="openCourseContent('${cid}')">Access →</button>`
+      : `<button class="course-access-btn" onclick="window.location.href='index.html#pricing'">${isPending ? 'Awaiting Approval' : 'Enroll →'}</button>`;
+    return `<div class="course-card-dash ${isApproved?'':'locked'}">
+      <div class="course-icon">${ci.icon}</div>
+      <div class="course-name">${ci.name}</div>
+      <div class="course-desc">${ci.desc}</div>
+      <div class="course-footer">
+        <span class="course-price">${ci.price}</span>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          ${statusBadge} ${btn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openCourseContent = function(cid) {
+  const ci = COURSE_INFO[cid] || {};
+  alert(`${ci.icon} ${ci.name}\n\nCourse content will be loaded here once the full LMS is connected.\n\nFor now, access your course materials via the Downloads section or contact SevenFX directly on Telegram.`);
+};
+
+// ── Markets ──────────────────────────────────────────────
+const MARKETS = [
+  { sym:'EURUSD', base: 1.0850, decimals:4 },
+  { sym:'GBPUSD', base: 1.2730, decimals:4 },
+  { sym:'GBPJPY', base: 196.20, decimals:2 },
+  { sym:'XAUUSD', base: 2340.00, decimals:2 },
+  { sym:'BTCUSD', base: 67500,  decimals:0 },
+  { sym:'ETHUSD', base: 3520,   decimals:0 },
+  { sym:'NAS100', base: 18840,  decimals:0 },
+];
+
+let mktPrices = {};
+MARKETS.forEach(m => mktPrices[m.sym] = m.base);
+
+function buildMarketsGrid() {
+  const g  = document.getElementById('marketsGrid');
+  const g2 = document.getElementById('overviewMarkets');
+  const html = MARKETS.map(m => marketCardHtml(m)).join('');
+  if(g)  g.innerHTML = html;
+  if(g2) g2.innerHTML = html;
+}
+
+function marketCardHtml(m) {
+  const p = mktPrices[m.sym];
+  const chg = ((Math.random() * 0.4) - 0.2).toFixed(2);
+  const dir = parseFloat(chg) >= 0 ? 'up' : 'dn';
+  return `<div class="market-card" id="mkt-${m.sym}">
+    <div class="market-sym">${m.sym}</div>
+    <div class="market-price">${p.toFixed(m.decimals)}</div>
+    <div class="market-chg ${dir}">${dir==='up'?'▲':'▼'} ${Math.abs(chg)}%</div>
+  </div>`;
+}
+
+function updateMarketPrices() {
+  MARKETS.forEach(m => {
+    const drift = (Math.random() - 0.5) * 0.0004 * m.base;
+    mktPrices[m.sym] = Math.max(0, mktPrices[m.sym] + drift);
+    const els = document.querySelectorAll(`#mkt-${m.sym}`);
+    const p    = mktPrices[m.sym];
+    const chg  = ((Math.random() * 0.4) - 0.2).toFixed(2);
+    const dir  = parseFloat(chg) >= 0 ? 'up' : 'dn';
+    els.forEach(el => {
+      el.querySelector('.market-price').textContent = p.toFixed(m.decimals);
+      const chgEl = el.querySelector('.market-chg');
+      chgEl.textContent = (dir==='up'?'▲':'▼') + ' ' + Math.abs(chg) + '%';
+      chgEl.className = 'market-chg ' + dir;
+    });
+  });
+  buildTicker();
+}
+
+function startMarketUpdates() {
+  buildTicker();
+  setInterval(updateMarketPrices, 30000);
+}
+
+function buildTicker() {
+  const html = [...MARKETS, ...MARKETS].map(m => {
+    const p   = mktPrices[m.sym];
+    const dir = Math.random() > 0.5 ? 'up' : 'dn';
+    const chg = (Math.random()*0.35).toFixed(2);
+    return `<div class="ticker-item">
+      <div class="ticker-dot ${dir}"></div>
+      <span class="ticker-sym">${m.sym}</span>
+      <span class="ticker-price">${p.toFixed(m.decimals)}</span>
+      <span class="ticker-chg ${dir}">${dir==='up'?'+':'-'}${chg}%</span>
+    </div>`;
+  }).join('');
+  const el = document.getElementById('dashTickerTrack');
+  if(el) el.innerHTML = html;
+}
+
+// ── Sessions ─────────────────────────────────────────────
+const SESSIONS = [
+  { name:'Sydney',   utcOpen:22, utcClose:7,  label:'22:00 – 07:00 UTC',  icon:'🦘' },
+  { name:'Tokyo',    utcOpen:0,  utcClose:9,  label:'00:00 – 09:00 UTC',  icon:'🗼' },
+  { name:'London',   utcOpen:8,  utcClose:16, label:'08:00 – 16:00 UTC',  icon:'🏛' },
+  { name:'New York', utcOpen:13, utcClose:21, label:'13:00 – 21:00 UTC',  icon:'🗽' },
+];
+
+function isSessionOpen(s) {
+  const utcH = new Date().getUTCHours();
+  if(s.utcOpen < s.utcClose) return utcH >= s.utcOpen && utcH < s.utcClose;
+  return utcH >= s.utcOpen || utcH < s.utcClose; // overnight
+}
+
+function buildSessionsGrid() {
+  const el = document.getElementById('sessionsGrid');
+  if(!el) return;
+  const isActive = s => (s.name === 'London' || s.name === 'New York') && isSessionOpen(s);
+  el.innerHTML = SESSIONS.map(s => {
+    const open     = isSessionOpen(s);
+    const active   = isActive(s);
+    const sevenFX  = s.name === 'London' || s.name === 'New York';
+    const cls      = active ? 'active-session' : open ? 'open-session' : '';
+    const dotCls   = open ? 'live' : 'closed';
+    return `<div class="session-card ${cls}">
+      <div class="session-indicator ${dotCls}"></div>
+      <div style="font-size:1.5rem;margin-bottom:6px;">${s.icon}</div>
+      <div class="session-name">${s.name}</div>
+      <div class="session-time">${s.label}</div>
+      <span class="badge ${open ? 'badge-approved' : 'badge-locked'}">${open ? '● Open' : '○ Closed'}</span>
+      ${sevenFX ? '<div style="margin-top:8px;"><span class="badge badge-active" style="font-size:.65rem;">SevenFX Active</span></div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function startSessionClock() {
+  function tick() {
+    const now = new Date();
+    const utc3 = new Date(now.getTime() + 3*3600000);
+    const timeStr = utc3.toISOString().slice(11,19) + ' UTC+3';
+    const el = document.getElementById('sessionCurrentTime');
+    if(el) el.textContent = 'Current Time: ' + timeStr;
+    buildSessionsGrid();
+  }
+  tick();
+  setInterval(tick, 10000);
+}
+
+// ── Logout ────────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  if(!confirm('Sign out of SevenFX?')) return;
+  await signOut(auth);
+  window.location.href = 'index.html';
+});
+
+// ── Inactivity Timer ──────────────────────────────────────
+let inactivityTimer, countdownTimer, countdownVal = 30;
+const INACT_TIMEOUT = 15 * 60 * 1000; // 15 min
+
+function resetInactivity() {
+  clearTimeout(inactivityTimer);
+  clearInterval(countdownTimer);
+  document.getElementById('inactivityWarn').classList.remove('show');
+  countdownVal = 30;
+  inactivityTimer = setTimeout(showInactWarning, INACT_TIMEOUT);
+}
+window.resetInactivity = resetInactivity;
+
+function showInactWarning() {
+  document.getElementById('inactivityWarn').classList.add('show');
+  countdownVal = 30;
+  document.getElementById('inactCountdown').textContent = countdownVal;
+  countdownTimer = setInterval(() => {
+    countdownVal--;
+    document.getElementById('inactCountdown').textContent = countdownVal;
+    if(countdownVal <= 0) {
+      clearInterval(countdownTimer);
+      signOut(auth).then(() => window.location.href = 'index.html');
+    }
+  }, 1000);
+}
+
+function startInactivityTimer() {
+  ['click','keydown','mousemove','touchstart','scroll'].forEach(ev =>
+    document.addEventListener(ev, resetInactivity, { passive: true })
+  );
+  resetInactivity();
+}
+
+// ── Checklist (Dashboard version) ────────────────────────
+const CL_ITEMS = [
+  { id:'d1', label:'Active Session?',             desc:'London or New York session is open' },
+  { id:'d2', label:'Valid Location?',             desc:'Price at LVN, VAH, or VAL' },
+  { id:'d3', label:'Valid Model Context?',        desc:'LVN Rejection / VA Rotation / Value Acceptance' },
+  { id:'d4', label:'Price Behavior Matches?',    desc:'Rejection → strong reaction | Rotation → VA respect | Acceptance → break + hold + retest' },
+  { id:'d5', label:'VWAP + VMA Confirmed?',      desc:'Both confirmed on 15M timeframe' },
+  { id:'d6', label:'Market Flow Aligned?',       desc:'Correlated pairs + DXY in alignment' },
+];
+const clState = {};
+CL_ITEMS.forEach(i => clState[i.id] = false);
+
+function buildDashCL() {
+  const el = document.getElementById('dashClItems');
+  if(!el) return;
+  el.innerHTML = CL_ITEMS.map((item, idx) => `
+    <div class="cl-row ${clState[item.id]?'checked':''}" onclick="toggleDashCL('${item.id}')">
+      <div class="cl-check">${clState[item.id]?'<span style="color:#07091e;font-size:.65rem;font-weight:700">✓</span>':''}</div>
+      <div><div class="cl-label">${idx+1}. ${item.label}</div><div class="cl-desc">${item.desc}</div></div>
+    </div>`).join('');
+  updateDashCLResult();
+}
+
+window.toggleDashCL = function(id) {
+  clState[id] = !clState[id];
+  buildDashCL();
+};
+window.resetDashCL = function() {
+  Object.keys(clState).forEach(k => clState[k] = false);
+  buildDashCL();
+};
+window.openChecklistTool = function() { showSection('checklist'); };
+
+function updateDashCLResult() {
+  const score = Object.values(clState).filter(Boolean).length;
+  const gradeEl  = document.getElementById('dashClGrade');
+  const setupEl  = document.getElementById('dashClSetup');
+  const actionEl = document.getElementById('dashClAction');
+  const result   = document.getElementById('dashClResult');
+  if(score >= 5) {
+    if(gradeEl)  { gradeEl.textContent = 'A+'; gradeEl.style.color = 'var(--green)'; }
+    if(setupEl)  setupEl.textContent = 'High Probability Setup';
+    if(actionEl) { actionEl.textContent = '✓ EXECUTE IMMEDIATELY — Runner Model Eligible'; actionEl.style.background='rgba(52,211,153,.1)'; actionEl.style.color='var(--green)'; actionEl.style.border='1px solid rgba(52,211,153,.2)'; }
+    if(result)   result.style.borderColor='rgba(52,211,153,.4)';
+  } else if(score === 4) {
+    if(gradeEl)  { gradeEl.textContent = 'A'; gradeEl.style.color = 'var(--gold)'; }
+    if(setupEl)  setupEl.textContent = 'Valid Standard Setup';
+    if(actionEl) { actionEl.textContent = '→ Execute — Standard Management Only (No Runner)'; actionEl.style.background='rgba(240,192,64,.08)'; actionEl.style.color='var(--gold)'; actionEl.style.border='1px solid rgba(240,192,64,.2)'; }
+    if(result)   result.style.borderColor='rgba(240,192,64,.4)';
+  } else if(score > 0) {
+    if(gradeEl)  { gradeEl.textContent = '✕'; gradeEl.style.color = 'var(--red)'; }
+    if(setupEl)  setupEl.textContent = 'Invalid Setup';
+    if(actionEl) { actionEl.textContent = '⊘ NO TRADE — Inactivity Is The Correct Response'; actionEl.style.background='rgba(248,113,113,.08)'; actionEl.style.color='var(--red)'; actionEl.style.border='1px solid rgba(248,113,113,.2)'; }
+    if(result)   result.style.borderColor='rgba(248,113,113,.3)';
+  } else {
+    if(gradeEl)  { gradeEl.textContent = '—'; gradeEl.style.color = 'var(--text3)'; }
+    if(setupEl)  setupEl.textContent = 'Select conditions above';
+    if(actionEl) { actionEl.textContent = 'Awaiting input…'; actionEl.style.background='var(--surface)'; actionEl.style.color='var(--text3)'; actionEl.style.border='none'; }
+    if(result)   result.style.borderColor='var(--border)';
+  }
+}
+
+function buildOverviewMarkets() {
+  // alias — same grid as markets
+}
+
+// Expose download click
+window.dlClick = function(id) {
+  if(!userCourses.length) {
+    alert('📁 This resource requires course enrollment and approval.\n\nEnroll via the All Courses section, then contact SevenFX to request access.');
+  } else {
+    alert('📥 Download available. Please contact SevenFX directly on Telegram to receive your file: @Seven7FxAcademy');
+  }
+};
+
+</script>
+
+<!-- NON-MODULE SCRIPT: section navigation -->
+<script>
+function showSection(name) {
+  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById('sec-' + name);
+  if(sec) sec.classList.add('active');
+  const item = document.querySelector('.sidebar-item[data-section="' + name + '"]');
+  if(item) item.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Close mobile sidebar
+  if(window.innerWidth <= 700) {
+    document.getElementById('dashSidebar').classList.remove('mob-open');
+  }
+}
+
+function toggleMobileSidebar() {
+  document.getElementById('dashSidebar').classList.toggle('mob-open');
+}
+</script>
+
+</body>
+</html>
