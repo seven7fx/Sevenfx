@@ -1295,20 +1295,73 @@ onAuthStateChanged(auth, async (user) => {
   // Signed in → verify admin status in Firestore
   // Admins collection: document ID = email (lowercase)
   let isAdmin = false;
+
+  // ── DIAGNOSTIC LOGS ─────────────────────────────────────
+  console.log('=== SevenFX Admin Auth Diagnostic ===');
+  console.log('UID:  ', user.uid);
+  console.log('EMAIL:', user.email);
+
+  // --- Pass 1: look up by email ---
+  let emailDocExists = false, emailDocData = null, emailDocError = null;
   try {
     const snapEmail = await getDoc(doc(db,'admins', user.email.toLowerCase()));
-    if (snapEmail.exists()) isAdmin = true;
-  } catch(e) { console.warn('[AdminVerify] Firestore error:', e.message); }
+    emailDocExists = snapEmail.exists();
+    emailDocData   = emailDocExists ? snapEmail.data() : null;
+    console.log('--- Pass 1: lookup by EMAIL ---');
+    console.log('PATH:      admins/' + user.email.toLowerCase());
+    console.log('DOC EXISTS:', emailDocExists);
+    console.log('DOC DATA:  ', emailDocExists ? JSON.stringify(emailDocData) : 'n/a');
+    if (emailDocExists) isAdmin = true;
+  } catch(e) {
+    emailDocError = e.message;
+    console.warn('[AdminVerify] Firestore error:', e.message);
+    console.log('DOC EXISTS: ERROR -', e.message);
+  }
 
-  // Also check by UID if email doc not found
+  // --- Pass 2: look up by UID ---
+  let uidDocExists = false, uidDocData = null, uidDocError = null;
   if (!isAdmin) {
     try {
       const snapUID = await getDoc(doc(db,'admins', user.uid));
-      if (snapUID.exists() && (snapUID.data().role === 'admin' || snapUID.data().email === user.email)) {
-        isAdmin = true;
+      uidDocExists = snapUID.exists();
+      uidDocData   = uidDocExists ? snapUID.data() : null;
+      console.log('--- Pass 2: lookup by UID ---');
+      console.log('PATH:      admins/' + user.uid);
+      console.log('DOC EXISTS:', uidDocExists);
+      console.log('DOC DATA:  ', uidDocExists ? JSON.stringify(uidDocData) : 'n/a');
+      if (uidDocExists) {
+        const roleVal  = uidDocData.role;
+        const emailVal = uidDocData.email;
+        console.log('ROLE:      ', roleVal);
+        console.log('EMAIL FIELD:', emailVal);
+        const condition = (roleVal === 'admin' || emailVal === user.email);
+        console.log('CONDITION: role==="admin" || email===user.email ->', condition);
+        if (condition) isAdmin = true;
       }
-    } catch(e) {}
+    } catch(e) {
+      uidDocError = e.message;
+      console.log('--- Pass 2: lookup by UID ---');
+      console.log('DOC EXISTS: ERROR -', e.message);
+    }
   }
+
+  // --- Final result ---
+  console.log('--- Final ---');
+  console.log('IS ADMIN:', isAdmin);
+  if (!isAdmin) {
+    let reason = 'unknown';
+    if (emailDocError || uidDocError) {
+      reason = 'Firestore query failed - ' + (emailDocError || uidDocError);
+    } else if (!emailDocExists && !uidDocExists) {
+      reason = 'Document not found - neither admins/' + user.email.toLowerCase() + ' nor admins/' + user.uid + ' exists in Firestore';
+    } else if (uidDocExists && uidDocData) {
+      const rv = uidDocData.role;
+      if (rv !== 'admin') reason = 'Role mismatch - stored role is "' + rv + '", expected "admin"';
+      else reason = 'Email mismatch - stored email is "' + uidDocData.email + '", user email is "' + user.email + '"';
+    }
+    console.log('DENY REASON:', reason);
+  }
+  console.log('======================================');
 
   if (!isAdmin) {
     // Not an admin → sign them out and show denied
