@@ -746,6 +746,16 @@ a { color:inherit; text-decoration:none; }
       <div class="page-title">Welcome Back 👋</div>
       <div class="page-sub" id="overviewWelcomeSub">Loading your dashboard…</div>
 
+      <!-- Email Verification Banner (shown if not verified) -->
+      <div id="dashVerBanner" style="display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:none;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:var(--gold);font-size:.88rem;margin-bottom:4px;">Email Verification Required</div>
+          <div style="font-size:.82rem;color:var(--text2);margin-bottom:10px;">Please verify your email to access course content. Check your inbox (and spam) for the verification email.</div>
+          <button id="dashResendBtn" onclick="dashResendVerification()" style="font-size:.78rem;padding:6px 14px;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);color:var(--gold);border-radius:8px;cursor:pointer;font-family:var(--font-body);font-weight:600;transition:all .2s;">↺ Resend Verification Email</button>
+        </div>
+      </div>
+
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-val" id="statCoursesOwned">—</div>
@@ -1333,7 +1343,7 @@ a { color:inherit; text-decoration:none; }
 ═══════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, updateProfile, browserLocalPersistence, setPersistence }
+import { getAuth, onAuthStateChanged, signOut, updateProfile, browserLocalPersistence, setPersistence, sendEmailVerification }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -1404,6 +1414,16 @@ onAuthStateChanged(auth, async user => {
   startMarketUpdates();
   startSessionClock();
   startInactivityTimer();
+
+  // Show email verification banner if not verified
+  const verBanner = document.getElementById('dashVerBanner');
+  if (verBanner) {
+    if (!user.emailVerified) {
+      verBanner.style.display = 'flex';
+    } else {
+      verBanner.style.display = 'none';
+    }
+  }
 
   setTimeout(() => document.getElementById('loadScreen').classList.add('hidden'), 800);
 });
@@ -1598,9 +1618,32 @@ function buildAllCoursesGrid() {
   }).join('');
 }
 
-window.openCourseContent = function(cid) {
+window.openCourseContent = async function(cid) {
+  const user = auth?.currentUser;
+  if (!user) { window.location.href = 'index.html'; return; }
+
+  // Email verification gate
+  if (!user.emailVerified) {
+    try { await user.reload(); } catch(e) {}
+    if (!auth.currentUser?.emailVerified) {
+      alert('⚠️ Email Verification Required\n\nPlease verify your email before accessing course content.\n\nCheck your inbox for the verification email, then refresh this page.');
+      return;
+    }
+  }
+
+  // Firestore live access check
+  try {
+    const snap = await getDoc(doc(db,'courseAccess', user.uid + '_' + cid));
+    if (!snap.exists() || snap.data().access !== true) {
+      alert('🔒 Access Denied\n\nYou do not have active access to this course.\n\nIf you have submitted payment, your access will be granted within 24–48 hours after admin approval.');
+      return;
+    }
+  } catch(e) {
+    console.warn('[Dashboard] Course access check failed:', e.message);
+  }
+
   const ci = COURSE_INFO[cid] || {};
-  alert(`${ci.icon} ${ci.name}\n\nCourse content will be loaded here once the full LMS is connected.\n\nFor now, access your course materials via the Downloads section or contact SevenFX directly on Telegram.`);
+  alert(`${ci.icon} ${ci.name}\n\nCourse content will be loaded here once the full LMS is connected.\n\nFor now, access your course materials via the Downloads section or contact SevenFX directly on Telegram: @Seven7FxAcademy`);
 };
 
 // ── Markets ──────────────────────────────────────────────
@@ -1722,6 +1765,23 @@ function startSessionClock() {
   tick();
   setInterval(tick, 10000);
 }
+
+// ── Email Verification ─────────────────────────────────────
+window.dashResendVerification = async function() {
+  const user = auth?.currentUser;
+  const btn  = document.getElementById('dashResendBtn');
+  if (!user || !btn) return;
+  btn.textContent = 'Sending…';
+  btn.disabled    = true;
+  try {
+    await sendEmailVerification(user);
+    btn.textContent = '✓ Email Sent! Check your inbox';
+    setTimeout(() => { btn.textContent = '↺ Resend Verification Email'; btn.disabled = false; }, 5000);
+  } catch(e) {
+    btn.textContent = 'Please wait before retrying';
+    setTimeout(() => { btn.textContent = '↺ Resend Verification Email'; btn.disabled = false; }, 30000);
+  }
+};
 
 // ── Logout ────────────────────────────────────────────────
 document.getElementById('logoutBtn').addEventListener('click', async () => {
