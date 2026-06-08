@@ -1086,6 +1086,20 @@ service cloud.firestore {
       allow read, write: if request.auth != null &&
         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
     }
+
+    // Settings — admin reads/writes; authenticated users read
+    match /settings/{id} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Partners — anyone reads; admin writes
+    match /partners/{id} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
   }
 }</div>
         <p style="font-size:.76rem;color:var(--text3);margin-top:10px;">Go to: Firebase Console → Firestore → Rules → paste above → Publish</p>
