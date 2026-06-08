@@ -1029,6 +1029,67 @@ td.strong{color:var(--text);font-weight:600;}
           <div class="field"><label>Prop Firm (ETB)</label><input type="text" id="cfgP4" value="12,000 ETB"></div>
         </div>
       </div>
+      <div class="settings-section">
+        <div class="settings-title">🔐 Firestore Rules Reference</div>
+        <p style="font-size:.82rem;color:var(--text2);line-height:1.7;margin-bottom:14px;">If dashboards show <strong style="color:var(--red);">Missing or insufficient permissions</strong>, update your Firestore rules in the Firebase Console. Paste the rules below:</p>
+        <div style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:16px;font-family:var(--fm);font-size:.76rem;color:var(--accent3);line-height:1.8;white-space:pre-wrap;overflow-x:auto;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users — read own doc; admin reads all
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Admins — read own doc to check admin status
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Payments — user creates/reads own; admin reads/writes all
+    match /payments/{id} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null &&
+        (resource.data.uid == request.auth.uid ||
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin');
+      allow update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Course Access — user reads own; admin reads/writes all
+    match /courseAccess/{id} {
+      allow read: if request.auth != null &&
+        (resource.data.uid == request.auth.uid ||
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin');
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Community — anyone reads; admin writes
+    match /community/{id} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Announcements — anyone reads; admin writes
+    match /announcements/{id} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Audit Logs — admin only
+    match /auditLogs/{id} {
+      allow read, write: if request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}</div>
+        <p style="font-size:.76rem;color:var(--text3);margin-top:10px;">Go to: Firebase Console → Firestore → Rules → paste above → Publish</p>
+      </div>
     </div>
 
     <!-- ═══ REVENUE PANEL ═══ -->
@@ -1519,9 +1580,21 @@ async function loadUsers() {
   const tbody = document.getElementById('usersBody');
   tbody.innerHTML = '<tr class="loading-row"><td colspan="6">Loading…</td></tr>';
   try {
-    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    } catch(indexErr) {
+      console.warn('[Admin] Users orderBy failed, falling back:', indexErr.code);
+      try {
+        snap = await getDocs(collection(db,'users'));
+      } catch(e2) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:var(--red);">Permission denied reading users.<br><small>Ensure Firestore rules: allow read for admins on /users collection. ${esc(e2.message)}</small></td></tr>`;
+        return;
+      }
+    }
     _allUsers = [];
     snap.forEach(d => _allUsers.push({ id: d.id, ...d.data() }));
+    _allUsers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     renderUsers(_allUsers);
   } catch(e) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:var(--red);">Error: ${esc(e.message)}</td></tr>`;
@@ -1607,12 +1680,29 @@ async function loadPayments() {
   const tbody = document.getElementById('paymentsBody');
   tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Loading…</td></tr>';
   try {
-    const snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
+    } catch(indexErr) {
+      console.warn('[Admin] Payments orderBy failed (index missing?), falling back:', indexErr.code);
+      try {
+        snap = await getDocs(collection(db,'payments'));
+      } catch(e2) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="7" style="color:var(--red);">Permission denied reading payments. Ensure Firestore rules allow admin reads.<br><small>${esc(e2.message)}</small></td></tr>`;
+        return;
+      }
+    }
     _allPayments = [];
     snap.forEach(d => _allPayments.push({ id: d.id, ...d.data() }));
+    // Sort client-side if we couldn't use orderBy
+    _allPayments.sort((a,b) => {
+      const ta = a.submittedAt?.toDate?.() || new Date(0);
+      const tb = b.submittedAt?.toDate?.() || new Date(0);
+      return tb - ta;
+    });
     renderPayments(_allPayments);
   } catch(e) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7" style="color:var(--red);">Error: ${esc(e.message)}<br><small>You may need a Firestore composite index on payments(submittedAt desc).</small></td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7" style="color:var(--red);">Error: ${esc(e.message)}<br><small>Check Firestore rules — admin collection must allow reads for authenticated admin users.</small></td></tr>`;
   }
 }
 
@@ -1688,9 +1778,25 @@ async function loadAccess() {
   const tbody = document.getElementById('accessBody');
   tbody.innerHTML = '<tr class="loading-row"><td colspan="6">Loading…</td></tr>';
   try {
-    const snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
+    let snap;
+    try {
+      snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
+    } catch(indexErr) {
+      console.warn('[Admin] courseAccess orderBy failed, falling back:', indexErr.code);
+      try {
+        snap = await getDocs(collection(db,'courseAccess'));
+      } catch(e2) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:var(--red);">Permission denied. Check Firestore rules for courseAccess collection.<br><small>${esc(e2.message)}</small></td></tr>`;
+        return;
+      }
+    }
     _allAccess = [];
     snap.forEach(d => _allAccess.push({ id: d.id, ...d.data() }));
+    _allAccess.sort((a,b) => {
+      const ta = a.approvedAt?.toDate?.() || new Date(0);
+      const tb = b.approvedAt?.toDate?.() || new Date(0);
+      return tb - ta;
+    });
     renderAccess(_allAccess);
   } catch(e) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:var(--red);">Error: ${esc(e.message)}</td></tr>`;
