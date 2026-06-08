@@ -9,1630 +9,2026 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #07091e;
-  --bg2:     #0d1035;
-  --bg3:     #12164a;
-  --surface: rgba(255,255,255,0.055);
-  --surface2:rgba(255,255,255,0.10);
-  --border:  rgba(100,120,255,0.12);
-  --border2: rgba(120,140,255,0.22);
-  --accent:  #6c63ff;
-  --accent2: #4f46e5;
-  --accent3: #00d4ff;
-  --gold:    #fbbf24;
-  --text:    #f0f4ff;
-  --text2:   #a0aed8;
-  --text3:   #4a5890;
-  --red:     #f87171;
-  --green:   #34d399;
-  --purple:  #a78bfa;
-  --font-display:'Syne',sans-serif;
-  --font-body:   'DM Sans',sans-serif;
-  --font-mono:   'DM Mono',monospace;
-  --radius:  12px;
-  --radius2: 20px;
-  --glow:    0 0 60px rgba(108,99,255,0.30);
-  --shadow:  0 24px 64px rgba(0,0,0,0.65);
-  --grad1:   linear-gradient(135deg,#6c63ff,#00d4ff);
-  --grad2:   linear-gradient(135deg,#00d4ff,#6c63ff,#a78bfa);
-  --sidebar-w: 240px;
+  --bg:       #07091e;
+  --bg2:      #0d1035;
+  --bg3:      #12164a;
+  --surface:  rgba(255,255,255,0.055);
+  --surface2: rgba(255,255,255,0.10);
+  --border:   rgba(100,120,255,0.12);
+  --border2:  rgba(120,140,255,0.22);
+  --accent:   #6c63ff;
+  --accent2:  #4f46e5;
+  --accent3:  #00d4ff;
+  --gold:     #fbbf24;
+  --text:     #f0f4ff;
+  --text2:    #a0aed8;
+  --text3:    #4a5890;
+  --red:      #f87171;
+  --green:    #34d399;
+  --purple:   #a78bfa;
+  --fd:       'Syne',sans-serif;
+  --fb:       'DM Sans',sans-serif;
+  --fm:       'DM Mono',monospace;
+  --r:        12px;
+  --r2:       20px;
+  --glow:     0 0 60px rgba(108,99,255,.30);
+  --shadow:   0 24px 64px rgba(0,0,0,.65);
+  --g1:       linear-gradient(135deg,#6c63ff,#00d4ff);
+  --g2:       linear-gradient(135deg,#00d4ff,#6c63ff,#a78bfa);
+  --sidebar:  240px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.6;overflow-x:hidden;min-height:100vh;}
-a{color:inherit;text-decoration:none;}
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--accent2);border-radius:3px;}
-
-/* ── ACCESS DENIED / LOADING SCREEN ── */
-#accessScreen {
-  position:fixed;inset:0;z-index:9999;
+body{
   background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:20px;
-  transition:opacity .4s;
-}
-#accessScreen.hide{opacity:0;pointer-events:none;}
-.access-logo{font-family:var(--font-display);font-size:2rem;font-weight:800;letter-spacing:.05em;}
-.access-logo span{color:var(--accent);text-shadow:0 0 20px rgba(108,99,255,.6);}
-.access-spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.access-msg{color:var(--text2);font-size:.9rem;}
-.access-denied-box{
-  background:var(--bg2);border:1px solid rgba(248,113,113,.3);border-radius:var(--radius2);
-  padding:40px 48px;text-align:center;max-width:420px;width:90%;
-  box-shadow:0 0 40px rgba(248,113,113,.12);
-}
-.access-denied-box h2{font-family:var(--font-display);font-size:1.5rem;color:var(--red);margin-bottom:10px;}
-.access-denied-box p{color:var(--text2);font-size:.9rem;margin-bottom:22px;}
-.access-denied-box a{
-  display:inline-block;padding:10px 28px;
-  background:var(--grad1);color:#fff;border-radius:30px;
-  font-weight:700;font-size:.875rem;
-  transition:opacity .2s;
-}
-.access-denied-box a:hover{opacity:.85;}
-
-/* ── LAYOUT ── */
-#adminApp{display:none;min-height:100vh;}
-#adminApp.show{display:flex;}
-
-/* ── SIDEBAR ── */
-.sidebar{
-  width:var(--sidebar-w);
+  color:var(--text);
+  font-family:var(--fb);
+  font-size:15px;
+  line-height:1.6;
+  overflow-x:hidden;
   min-height:100vh;
-  background:rgba(13,16,53,0.98);
+}
+
+/* ═══════ ACCESS DENIED / LOADING SCREENS ═══════ */
+#loadingScreen,#accessDenied{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:9999;gap:20px;
+}
+#accessDenied{display:none;}
+.screen-logo{
+  font-family:var(--fd);font-size:1.8rem;font-weight:800;
+  background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.screen-spinner{
+  width:40px;height:40px;border-radius:50%;
+  border:3px solid var(--border2);
+  border-top-color:var(--accent);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.screen-msg{color:var(--text2);font-size:.9rem;font-family:var(--fm);}
+.denied-icon{font-size:3rem;}
+.denied-title{font-family:var(--fd);font-size:1.4rem;font-weight:800;color:var(--red);}
+.denied-sub{color:var(--text2);font-size:.88rem;max-width:320px;text-align:center;}
+.denied-btn{
+  padding:12px 28px;border-radius:var(--r);font-family:var(--fd);font-weight:700;
+  font-size:.9rem;background:var(--g1);color:#fff;border:none;cursor:pointer;
+  margin-top:8px;transition:opacity .2s;
+}
+.denied-btn:hover{opacity:.85;}
+
+/* ═══════ LAYOUT ═══════ */
+#adminApp{display:none;min-height:100vh;}
+
+/* ═══════ SIDEBAR ═══════ */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;
+  width:var(--sidebar);
+  background:var(--bg2);
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;bottom:0;
   z-index:100;
   transition:transform .3s;
 }
 .sidebar-logo{
-  padding:22px 24px 18px;
+  padding:22px 22px 16px;
   border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
 }
-.sidebar-logo .logo-text{
-  font-family:var(--font-display);font-size:1.3rem;font-weight:800;letter-spacing:.05em;
+.sidebar-logo-text{
+  font-family:var(--fd);font-weight:800;font-size:1.1rem;
+  background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.sidebar-logo .logo-text span{color:var(--accent);text-shadow:0 0 16px rgba(108,99,255,.5);}
-.sidebar-logo .logo-sub{font-size:.68rem;color:var(--text3);margin-top:2px;letter-spacing:.04em;text-transform:uppercase;}
-.sidebar-admin-badge{
-  display:inline-block;margin-top:8px;
-  padding:2px 10px;background:rgba(251,191,36,.1);
-  border:1px solid rgba(251,191,36,.25);border-radius:20px;
-  font-size:.65rem;color:var(--gold);font-weight:700;letter-spacing:.06em;
+.sidebar-logo-badge{
+  font-size:.55rem;font-family:var(--fm);text-transform:uppercase;
+  letter-spacing:.12em;color:var(--gold);
+  border:1px solid rgba(251,191,36,.3);padding:2px 7px;border-radius:20px;
+  margin-left:auto;
 }
-.sidebar-nav{flex:1;padding:14px 0;overflow-y:auto;}
+.sidebar-admin-info{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+}
+.sidebar-admin-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--g1);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fd);font-weight:800;font-size:.9rem;color:#fff;
+  flex-shrink:0;
+}
+.sidebar-admin-row{display:flex;align-items:center;gap:10px;}
+.sidebar-admin-name{font-weight:600;font-size:.82rem;line-height:1.2;}
+.sidebar-admin-role{
+  font-size:.62rem;font-family:var(--fm);text-transform:uppercase;
+  letter-spacing:.1em;color:var(--gold);
+}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto;}
+.nav-section-label{
+  font-size:.6rem;font-family:var(--fm);text-transform:uppercase;
+  letter-spacing:.15em;color:var(--text3);
+  padding:14px 22px 6px;
+}
 .nav-item{
   display:flex;align-items:center;gap:11px;
-  padding:11px 22px;
-  font-size:.845rem;font-weight:500;
-  color:var(--text2);
-  cursor:pointer;
-  border-left:3px solid transparent;
-  transition:all .2s;
-  user-select:none;
+  padding:10px 22px;cursor:pointer;
+  font-size:.88rem;font-weight:500;color:var(--text2);
+  transition:all .18s;position:relative;border-radius:0;
+  border:none;background:none;width:100%;text-align:left;
 }
-.nav-item:hover{color:var(--text);background:rgba(108,99,255,.08);}
+.nav-item:hover{background:var(--surface);color:var(--text);}
 .nav-item.active{
-  color:var(--accent3);
-  background:rgba(108,99,255,.12);
-  border-left-color:var(--accent);
+  background:rgba(108,99,255,.12);color:var(--accent);
 }
-.nav-item .ni{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
-.nav-separator{height:1px;background:var(--border);margin:8px 16px;}
-.sidebar-footer{
-  padding:14px 22px;
-  border-top:1px solid var(--border);
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--accent);border-radius:0 3px 3px 0;
 }
-.admin-user-info{
-  display:flex;align-items:center;gap:9px;margin-bottom:12px;
-}
-.admin-avatar{
-  width:32px;height:32px;border-radius:50%;
-  background:var(--grad1);
+.nav-item-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-item-badge{
+  margin-left:auto;min-width:20px;height:20px;padding:0 6px;
+  background:var(--red);border-radius:20px;
+  font-size:.65rem;font-weight:700;color:#fff;font-family:var(--fm);
   display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0;
 }
-.admin-email{font-size:.72rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;}
+.sidebar-footer{
+  padding:14px 20px;border-top:1px solid var(--border);
+}
 .logout-btn{
-  width:100%;padding:8px;
-  background:rgba(248,113,113,.08);
-  border:1px solid rgba(248,113,113,.2);
-  border-radius:var(--radius);
-  color:var(--red);font-size:.78rem;font-weight:600;
-  cursor:pointer;font-family:var(--font-body);
-  transition:all .2s;
+  display:flex;align-items:center;gap:10px;
+  width:100%;padding:10px 14px;border-radius:var(--r);
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);
+  color:var(--red);font-family:var(--fb);font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .2s;
 }
 .logout-btn:hover{background:rgba(248,113,113,.16);}
 
-/* ── TOPBAR ── */
+/* ═══════ TOPBAR ═══════ */
 .topbar{
-  position:fixed;top:0;left:var(--sidebar-w);right:0;
-  height:60px;z-index:90;
-  background:rgba(7,9,30,.95);
-  backdrop-filter:blur(20px);
+  position:fixed;top:0;left:var(--sidebar);right:0;height:58px;
+  background:rgba(7,9,30,.85);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;
+  display:flex;align-items:center;padding:0 28px;gap:16px;
+  z-index:99;
 }
-.topbar-title{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--text);}
-.topbar-right{display:flex;align-items:center;gap:12px;}
-.topbar-time{font-family:var(--font-mono);font-size:.75rem;color:var(--text3);}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse-dot 2s infinite;}
-@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.4;}}
+.topbar-title{
+  font-family:var(--fd);font-weight:700;font-size:1rem;
+  display:flex;align-items:center;gap:10px;
+}
+.topbar-breadcrumb{
+  font-size:.75rem;font-family:var(--fm);color:var(--text3);margin-left:4px;
+}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.topbar-time{
+  font-family:var(--fm);font-size:.72rem;color:var(--text3);
+  letter-spacing:.05em;
+}
+.topbar-refresh{
+  padding:6px 14px;border-radius:var(--r);font-size:.78rem;font-family:var(--fb);
+  font-weight:600;background:var(--surface);border:1px solid var(--border2);
+  color:var(--text2);cursor:pointer;transition:all .2s;
+}
+.topbar-refresh:hover{border-color:var(--accent);color:var(--accent);}
+.hamburger{
+  display:none;background:none;border:none;color:var(--text);
+  font-size:1.2rem;cursor:pointer;padding:4px 8px;
+}
 
-/* ── MAIN CONTENT ── */
+/* ═══════ MAIN CONTENT ═══════ */
 .main{
-  margin-left:var(--sidebar-w);
-  padding-top:60px;
+  margin-left:var(--sidebar);
+  padding-top:58px;
   min-height:100vh;
-  flex:1;
 }
-.section{display:none;padding:28px;}
-.section.active{display:block;}
+.panel{display:none;padding:32px 28px;}
+.panel.active{display:block;}
 
-/* ── SECTION HEADER ── */
-.section-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:24px;flex-wrap:wrap;gap:12px;
+/* ═══════ SECTION HEADER ═══════ */
+.section-hdr{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:28px;flex-wrap:wrap;gap:12px;
 }
-.section-title{font-family:var(--font-display);font-size:1.4rem;font-weight:700;}
-.section-sub{font-size:.8rem;color:var(--text3);margin-top:2px;}
-.refresh-btn{
-  padding:7px 16px;background:var(--surface2);
-  border:1px solid var(--border2);border-radius:8px;
-  color:var(--text2);font-size:.8rem;font-family:var(--font-body);font-weight:600;
-  cursor:pointer;transition:all .2s;
+.section-hdr-left h1{
+  font-family:var(--fd);font-weight:800;font-size:1.5rem;line-height:1.1;
 }
-.refresh-btn:hover{color:var(--text);border-color:var(--accent);}
+.section-hdr-left p{color:var(--text2);font-size:.85rem;margin-top:4px;}
+.hdr-btn{
+  padding:9px 18px;border-radius:var(--r);font-family:var(--fb);
+  font-weight:600;font-size:.82rem;cursor:pointer;transition:all .2s;
+  border:none;
+}
+.hdr-btn-primary{background:var(--g1);color:#fff;}
+.hdr-btn-primary:hover{opacity:.85;}
+.hdr-btn-secondary{
+  background:var(--surface);border:1px solid var(--border2);
+  color:var(--text2);
+}
+.hdr-btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
 
-/* ── STAT CARDS ── */
-.stat-grid{
+/* ═══════ STAT CARDS ═══════ */
+.stats-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-  gap:16px;
-  margin-bottom:28px;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:16px;margin-bottom:28px;
 }
 .stat-card{
   background:var(--bg2);
   border:1px solid var(--border);
-  border-radius:var(--radius2);
-  padding:20px 22px;
-  position:relative;
-  overflow:hidden;
-  transition:border-color .2s,transform .2s;
+  border-radius:var(--r2);
+  padding:22px 20px;
+  position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+  cursor:default;
 }
-.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-card:hover{
+  transform:translateY(-3px);
+  border-color:var(--border2);
+  box-shadow:0 8px 32px rgba(108,99,255,.12);
+}
 .stat-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--grad1);
+  background:var(--g1);opacity:0;transition:opacity .2s;
 }
-.stat-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-.stat-val{font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--text);}
-.stat-icon{position:absolute;right:16px;top:16px;font-size:1.4rem;opacity:.4;}
+.stat-card:hover::before{opacity:1;}
+.stat-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;margin-bottom:14px;
+}
+.stat-val{
+  font-family:var(--fd);font-weight:800;font-size:2rem;
+  line-height:1;color:var(--text);margin-bottom:4px;
+}
+.stat-lbl{
+  font-size:.72rem;font-family:var(--fm);text-transform:uppercase;
+  letter-spacing:.1em;color:var(--text3);
+}
+.stat-trend{
+  font-size:.72rem;color:var(--green);margin-top:6px;font-family:var(--fm);
+}
 
-/* ── TABLE ── */
-.table-wrap{
-  background:var(--bg2);
-  border:1px solid var(--border);
-  border-radius:var(--radius2);
-  overflow:hidden;
+/* ═══════ CARDS ═══════ */
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;margin-bottom:20px;
 }
-.table-toolbar{
-  padding:14px 20px;
+.card-header{
+  padding:16px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.card-title{
+  font-family:var(--fd);font-weight:700;font-size:.95rem;
+  display:flex;align-items:center;gap:8px;
+}
+.card-body{padding:0;}
+.card-pad{padding:20px 22px;}
+
+/* ═══════ SEARCH / FILTER BAR ═══════ */
+.filter-bar{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  border-bottom:1px solid var(--border);
+  padding:14px 22px;border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);
 }
 .search-input{
-  flex:1;min-width:200px;
-  padding:8px 14px;
-  background:var(--surface);
-  border:1px solid var(--border2);border-radius:8px;
-  color:var(--text);font-family:var(--font-body);font-size:.83rem;
-  outline:none;transition:border-color .2s;
+  flex:1;min-width:180px;padding:9px 14px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);font-family:var(--fb);
+  font-size:.84rem;outline:none;transition:border-color .2s;
 }
 .search-input:focus{border-color:var(--accent);}
 .search-input::placeholder{color:var(--text3);}
 .filter-select{
-  padding:7px 12px;background:var(--surface);
-  border:1px solid var(--border2);border-radius:8px;
-  color:var(--text2);font-family:var(--font-body);font-size:.8rem;
-  outline:none;cursor:pointer;
+  padding:9px 14px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text2);font-family:var(--fb);
+  font-size:.82rem;outline:none;cursor:pointer;
 }
-.filter-select option{background:var(--bg2);}
-table{width:100%;border-collapse:collapse;}
-thead tr{background:rgba(108,99,255,.07);}
-th{
-  padding:11px 16px;text-align:left;
-  font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;
-  color:var(--text3);font-weight:600;white-space:nowrap;
+
+/* ═══════ TABLE ═══════ */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+thead th{
+  text-align:left;padding:11px 16px;
+  font-size:.66rem;font-family:var(--fm);text-transform:uppercase;
+  letter-spacing:.1em;color:var(--text3);
   border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.025);white-space:nowrap;
 }
-td{
-  padding:12px 16px;
-  font-size:.82rem;color:var(--text2);
-  border-bottom:1px solid rgba(255,255,255,.035);
-  vertical-align:middle;
+tbody td{
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);
+  color:var(--text2);vertical-align:middle;
 }
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(108,99,255,.04);}
-.empty-row{text-align:center;color:var(--text3);padding:32px!important;font-size:.85rem;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:rgba(108,99,255,.04);}
+td.strong{color:var(--text);font-weight:600;}
+.empty-row td{
+  text-align:center;padding:40px;color:var(--text3);
+  font-size:.85rem;font-style:italic;
+}
+.loading-row td{
+  text-align:center;padding:40px;color:var(--text3);font-size:.85rem;
+}
 
-/* ── BADGES ── */
+/* ═══════ BADGES ═══════ */
 .badge{
-  display:inline-block;padding:3px 10px;
-  border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.03em;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;
+  font-size:.68rem;font-family:var(--fm);font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;
 }
-.badge-approved,.badge-active{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.28);color:var(--green);}
-.badge-pending{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:var(--gold);}
-.badge-rejected,.badge-inactive,.badge-suspended{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);}
-.badge-admin{background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);color:var(--purple);}
-.badge-user{background:var(--surface2);border:1px solid var(--border2);color:var(--text3);}
-.badge-locked{background:rgba(74,88,144,.15);border:1px solid var(--border);color:var(--text3);}
+.badge-pending {background:rgba(251,191,36,.12);color:var(--gold);  border:1px solid rgba(251,191,36,.3);}
+.badge-approved{background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3);}
+.badge-rejected{background:rgba(248,113,113,.12);color:var(--red);   border:1px solid rgba(248,113,113,.3);}
+.badge-locked  {background:rgba(100,100,130,.1); color:var(--text3); border:1px solid var(--border);}
+.badge-admin   {background:rgba(251,191,36,.12); color:var(--gold);  border:1px solid rgba(251,191,36,.3);}
+.badge-user    {background:rgba(108,99,255,.1);  color:var(--accent);border:1px solid rgba(108,99,255,.25);}
+.badge-active  {background:rgba(52,211,153,.12); color:var(--green); border:1px solid rgba(52,211,153,.3);}
+.badge-inactive{background:rgba(248,113,113,.1); color:var(--red);   border:1px solid rgba(248,113,113,.3);}
 
-/* ── ACTION BUTTONS ── */
+/* ═══════ ACTION BUTTONS ═══════ */
 .action-btn{
-  padding:5px 11px;border-radius:7px;
-  font-size:.72rem;font-weight:700;font-family:var(--font-body);
-  cursor:pointer;border:1px solid;transition:all .2s;margin:2px;white-space:nowrap;
+  padding:5px 12px;border-radius:8px;font-size:.73rem;font-weight:600;
+  font-family:var(--fb);cursor:pointer;border:none;transition:all .2s;
+  margin-right:4px;white-space:nowrap;
 }
-.btn-approve{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--green);}
-.btn-approve:hover{background:rgba(52,211,153,.2);}
-.btn-reject{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red);}
-.btn-reject:hover{background:rgba(248,113,113,.2);}
-.btn-grant{background:rgba(108,99,255,.1);border-color:rgba(108,99,255,.3);color:var(--accent);}
-.btn-grant:hover{background:rgba(108,99,255,.2);}
-.btn-revoke{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.25);color:var(--gold);}
-.btn-revoke:hover{background:rgba(251,191,36,.18);}
-.btn-suspend{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2);color:var(--red);}
-.btn-suspend:hover{background:rgba(248,113,113,.16);}
-.btn-activate{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.2);color:var(--green);}
-.btn-activate:hover{background:rgba(52,211,153,.16);}
-.btn-view{background:var(--surface);border-color:var(--border2);color:var(--text2);}
-.btn-view:hover{border-color:var(--accent3);color:var(--accent3);}
-.btn-primary{
-  padding:9px 20px;background:var(--grad1);
-  border:none;border-radius:var(--radius);
-  color:#fff;font-weight:700;font-size:.83rem;font-family:var(--font-body);
-  cursor:pointer;transition:opacity .2s;
-}
-.btn-primary:hover{opacity:.85;}
+.btn-approve{background:rgba(52,211,153,.12); color:var(--green);border:1px solid rgba(52,211,153,.3);}
+.btn-approve:hover{background:rgba(52,211,153,.25);}
+.btn-reject {background:rgba(248,113,113,.1); color:var(--red);  border:1px solid rgba(248,113,113,.3);}
+.btn-reject:hover {background:rgba(248,113,113,.2);}
+.btn-grant  {background:rgba(108,99,255,.1);  color:var(--accent);border:1px solid rgba(108,99,255,.25);}
+.btn-grant:hover  {background:rgba(108,99,255,.2);}
+.btn-revoke {background:rgba(248,113,113,.08);color:var(--red);  border:1px solid rgba(248,113,113,.2);}
+.btn-revoke:hover {background:rgba(248,113,113,.18);}
+.btn-view   {background:var(--surface);       color:var(--text2); border:1px solid var(--border2);}
+.btn-view:hover   {border-color:var(--accent);color:var(--accent);}
+.btn-suspend{background:rgba(251,191,36,.08); color:var(--gold);  border:1px solid rgba(251,191,36,.2);}
+.btn-suspend:hover{background:rgba(251,191,36,.18);}
 
-/* ── ANNOUNCEMENT COMPOSER ── */
-.compose-box{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--radius2);padding:24px;margin-bottom:24px;
+/* ═══════ TOAST ═══════ */
+#toastContainer{
+  position:fixed;bottom:28px;right:28px;z-index:9999;
+  display:flex;flex-direction:column;gap:10px;
 }
-.compose-box h3{font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;}
-.form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
-.form-field{flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px;}
-.form-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
-.form-input,.form-select,.form-textarea{
-  padding:9px 14px;background:var(--surface);
-  border:1px solid var(--border2);border-radius:8px;
-  color:var(--text);font-family:var(--font-body);font-size:.85rem;
-  outline:none;transition:border-color .2s;
+.toast{
+  padding:13px 18px;border-radius:var(--r);
+  font-size:.85rem;font-weight:500;min-width:250px;max-width:360px;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  animation:slideIn .3s ease;
+  border:1px solid;
 }
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
-.form-select option{background:var(--bg2);}
-.form-textarea{resize:vertical;min-height:80px;}
+.toast-success{background:#0d2818;border-color:rgba(52,211,153,.3);color:var(--green);}
+.toast-error  {background:#2a0d0d;border-color:rgba(248,113,113,.3);color:var(--red);}
+.toast-info   {background:#0d1035;border-color:rgba(108,99,255,.3); color:var(--accent);}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes slideOut{from{transform:translateX(0);opacity:1;}to{transform:translateX(110%);opacity:0;}}
 
-/* ── COURSE GRID ── */
-.course-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:16px;
-}
-.course-card-admin{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--radius2);padding:22px;
-  position:relative;transition:border-color .2s;
-}
-.course-card-admin:hover{border-color:var(--border2);}
-.course-card-admin::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--grad1);border-radius:var(--radius2) var(--radius2) 0 0;
-}
-.cc-name{font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px;}
-.cc-sub{font-size:.77rem;color:var(--text3);margin-bottom:14px;}
-.cc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
-
-/* ── COMMUNITY LINKS ── */
-.community-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;
-}
-.community-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:22px;
-  transition:border-color .2s;
-}
-.community-card:hover{border-color:var(--border2);}
-.comm-icon{font-size:2rem;margin-bottom:10px;}
-.comm-name{font-family:var(--font-display);font-size:.95rem;font-weight:700;margin-bottom:6px;}
-.comm-url{font-family:var(--font-mono);font-size:.72rem;color:var(--text3);word-break:break-all;margin-bottom:12px;}
-
-/* ── SETTINGS ── */
-.settings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
-.settings-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;
-}
-.settings-card h3{font-family:var(--font-display);font-size:.95rem;font-weight:700;margin-bottom:16px;color:var(--accent3);}
-
-/* ── AUDIT LOG ── */
-.audit-timeline{display:flex;flex-direction:column;gap:10px;}
-.audit-item{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:14px 18px;
-  display:flex;align-items:center;gap:14px;
-  transition:border-color .2s;
-}
-.audit-item:hover{border-color:var(--border2);}
-.audit-icon{
-  width:36px;height:36px;border-radius:50%;
-  background:rgba(108,99,255,.12);
-  display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;
-}
-.audit-info{flex:1;}
-.audit-action{font-weight:600;font-size:.85rem;margin-bottom:2px;}
-.audit-meta{font-size:.73rem;color:var(--text3);}
-.audit-time{font-family:var(--font-mono);font-size:.7rem;color:var(--text3);white-space:nowrap;}
-
-/* ── NOTIFICATION ── */
-#adminNotif{
-  position:fixed;top:70px;right:20px;z-index:9999;
-  padding:12px 20px;border-radius:var(--radius);
-  font-size:.83rem;font-weight:600;
-  box-shadow:var(--shadow);
-  transform:translateX(110%);transition:transform .3s;
-  max-width:340px;
-}
-#adminNotif.show{transform:translateX(0);}
-#adminNotif.notif-ok{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:var(--green);}
-#adminNotif.notif-err{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:var(--red);}
-
-/* ── MODAL ── */
+/* ═══════ MODAL ═══════ */
 .modal-overlay{
-  position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-  display:none;align-items:center;justify-content:center;
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);z-index:5000;
+  display:none;align-items:center;justify-content:center;padding:20px;
 }
 .modal-overlay.open{display:flex;}
 .modal-box{
   background:var(--bg2);border:1px solid var(--border2);
-  border-radius:var(--radius2);padding:30px;width:min(520px,94vw);
-  box-shadow:var(--shadow);animation:modalIn .25s ease;
+  border-radius:var(--r2);width:100%;max-width:520px;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);overflow:hidden;
 }
-@keyframes modalIn{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
-.modal-title{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:16px;}
-.modal-close{float:right;background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;margin-top:-4px;}
-.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+.modal-hdr{
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(108,99,255,.05);
+}
+.modal-hdr h3{font-family:var(--fd);font-weight:700;font-size:1rem;}
+.modal-close{
+  background:none;border:none;color:var(--text2);
+  font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s;
+}
+.modal-close:hover{background:rgba(248,113,113,.1);color:var(--red);}
+.modal-body{padding:22px 24px;}
+.modal-footer{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;gap:10px;justify-content:flex-end;
+}
+.mf-btn{
+  padding:9px 20px;border-radius:var(--r);font-family:var(--fb);
+  font-weight:600;font-size:.85rem;cursor:pointer;border:none;transition:all .2s;
+}
+.mf-primary{background:var(--g1);color:#fff;}
+.mf-primary:hover{opacity:.85;}
+.mf-cancel{background:var(--surface);border:1px solid var(--border2);color:var(--text2);}
+.mf-cancel:hover{border-color:var(--red);color:var(--red);}
 
-/* ── HAMBURGER (mobile) ── */
-.sidebar-toggle{display:none;}
+/* ═══════ FORM FIELDS ═══════ */
+.field{margin-bottom:16px;}
+.field label{
+  display:block;font-size:.72rem;font-family:var(--fm);
+  text-transform:uppercase;letter-spacing:.1em;color:var(--text3);
+  margin-bottom:6px;
+}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 14px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);font-family:var(--fb);
+  font-size:.88rem;outline:none;transition:border-color .2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:90px;}
+
+/* ═══════ GLOW ACCENT CARDS ═══════ */
+.glow-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:20px 22px;
+  position:relative;overflow:hidden;
+}
+.glow-card::after{
+  content:'';position:absolute;
+  top:-40px;right:-40px;
+  width:120px;height:120px;border-radius:50%;
+  opacity:.07;pointer-events:none;
+}
+.glow-purple::after{background:var(--accent);}
+.glow-cyan::after{background:var(--accent3);}
+.glow-gold::after{background:var(--gold);}
+.glow-green::after{background:var(--green);}
+.glow-red::after{background:var(--red);}
+
+/* ═══════ COURSE CARDS (Courses panel) ═══════ */
+.course-mgmt-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;
+}
+.course-mgmt-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:22px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.course-mgmt-card:hover{
+  border-color:var(--border2);
+  box-shadow:0 8px 32px rgba(108,99,255,.1);
+}
+.cmg-icon{font-size:1.8rem;margin-bottom:12px;}
+.cmg-title{font-family:var(--fd);font-weight:700;font-size:.95rem;margin-bottom:4px;}
+.cmg-sub{font-size:.78rem;color:var(--text3);margin-bottom:14px;}
+.cmg-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ═══════ ANNOUNCEMENT CARD ═══════ */
+.ann-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px 18px;margin-bottom:12px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.ann-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px;}
+.ann-title{font-weight:600;font-size:.88rem;margin-bottom:3px;}
+.ann-body{font-size:.8rem;color:var(--text2);line-height:1.55;}
+.ann-meta{font-size:.7rem;font-family:var(--fm);color:var(--text3);margin-top:6px;}
+.ann-del{
+  margin-left:auto;background:none;border:none;color:var(--text3);
+  cursor:pointer;font-size:.85rem;padding:2px 6px;border-radius:6px;
+  transition:all .2s;flex-shrink:0;
+}
+.ann-del:hover{background:rgba(248,113,113,.1);color:var(--red);}
+
+/* ═══════ COMMUNITY LINKS ═══════ */
+.community-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;
+}
+.community-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+}
+.comm-icon{font-size:1.5rem;flex-shrink:0;}
+.comm-name{font-weight:600;font-size:.88rem;}
+.comm-link{
+  font-size:.78rem;color:var(--accent);font-family:var(--fm);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:130px;
+}
+
+/* ═══════ AUDIT LOG ═══════ */
+.audit-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+}
+.audit-item:last-child{border-bottom:none;}
+.audit-dot{
+  width:8px;height:8px;border-radius:50%;
+  flex-shrink:0;margin-top:6px;
+}
+.audit-dot-approve{background:var(--green);}
+.audit-dot-reject {background:var(--red);}
+.audit-dot-grant  {background:var(--accent);}
+.audit-dot-revoke {background:var(--gold);}
+.audit-dot-default{background:var(--text3);}
+.audit-action{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:2px;}
+.audit-detail{font-size:.78rem;color:var(--text2);}
+.audit-time{font-size:.7rem;font-family:var(--fm);color:var(--text3);margin-top:3px;}
+
+/* ═══════ SETTINGS ═══════ */
+.settings-section{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:22px;margin-bottom:20px;
+}
+.settings-title{
+  font-family:var(--fd);font-weight:700;font-size:.95rem;
+  margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.settings-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;
+}
+
+/* ═══════ MOBILE SIDEBAR OVERLAY ═══════ */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;
+}
+.sidebar-overlay.open{display:block;}
+
+/* ═══════ RESPONSIVE ═══════ */
 @media(max-width:768px){
-  :root{--sidebar-w:0px;}
-  .sidebar{transform:translateX(-240px);--sidebar-w:240px;}
-  .sidebar.mobile-open{transform:translateX(0);}
-  .topbar{left:0;}
-  .main{margin-left:0;}
-  .sidebar-toggle{
-    display:flex;align-items:center;justify-content:center;
-    width:36px;height:36px;background:var(--surface2);
-    border:1px solid var(--border2);border-radius:8px;
-    cursor:pointer;font-size:1rem;
+  :root{--sidebar:0px;}
+  .sidebar{
+    transform:translateX(-100%);width:240px;
+    box-shadow:8px 0 32px rgba(0,0,0,.5);
   }
-  .section{padding:16px;}
-  .stat-grid{grid-template-columns:1fr 1fr;}
-  .stat-val{font-size:1.5rem;}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .topbar{left:0;}
+  .hamburger{display:flex;}
+  .panel{padding:20px 16px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr;}
+  .course-mgmt-grid{grid-template-columns:1fr;}
+  .rev-grid{grid-template-columns:1fr !important;}
 }
 
-/* ── REVENUE PLACEHOLDER ── */
-.revenue-placeholder{
-  background:linear-gradient(135deg,rgba(108,99,255,.08),rgba(0,212,255,.05));
-  border:1px dashed var(--border2);border-radius:var(--radius2);
-  padding:40px;text-align:center;color:var(--text3);font-size:.85rem;
+/* ═══════ ADMIN LOGIN SCREEN ═══════ */
+#adminLoginScreen {
+  position:fixed;inset:0;background:var(--bg);
+  display:none;align-items:center;justify-content:center;
+  z-index:9998;padding:20px;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.08) 0%,transparent 60%),
+                   radial-gradient(ellipse at 80% 20%,rgba(0,212,255,.06) 0%,transparent 50%);
 }
-
-/* ── GLOWING GRADIENT TEXT ── */
-.grad-text{background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-
-/* scrollable table body */
-.scrollable-table{max-height:520px;overflow-y:auto;}
+.login-card {
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--r2);padding:40px 36px;
+  width:100%;max-width:400px;
+  box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 60px rgba(108,99,255,.08);
+}
+.login-logo {
+  font-family:var(--fd);font-size:1.6rem;font-weight:800;
+  text-align:center;margin-bottom:4px;
+}
+.login-logo span{color:var(--accent3);}
+.login-sub {
+  text-align:center;font-size:.75rem;font-family:var(--fm);
+  text-transform:uppercase;letter-spacing:.15em;color:var(--text3);
+  margin-bottom:28px;
+}
+.login-field{margin-bottom:16px;}
+.login-field label{
+  display:block;font-size:.7rem;font-family:var(--fm);
+  text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:6px;
+}
+.login-field input{
+  width:100%;padding:12px 16px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);font-family:var(--fb);
+  font-size:.9rem;outline:none;transition:border-color .2s;
+}
+.login-field input:focus{border-color:var(--accent);}
+.login-err{
+  color:var(--red);font-size:.8rem;margin-bottom:12px;
+  padding:9px 14px;background:rgba(248,113,113,.08);
+  border-radius:var(--r);border:1px solid rgba(248,113,113,.2);
+  display:none;
+}
+.login-btn{
+  width:100%;padding:13px;border-radius:var(--r);
+  background:var(--g1);color:#fff;border:none;
+  font-family:var(--fd);font-weight:700;font-size:.95rem;
+  cursor:pointer;transition:opacity .2s;margin-top:4px;
+}
+.login-btn:hover{opacity:.88;}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;}
+.login-back{
+  text-align:center;margin-top:16px;font-size:.78rem;color:var(--text3);
+}
+.login-back a{color:var(--accent);text-decoration:none;}
+.login-back a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 
-<!-- ── ACCESS SCREEN ── -->
-<div id="accessScreen">
-  <div class="access-logo">Seven<span>FX</span></div>
-  <div class="access-spinner"></div>
-  <div class="access-msg" id="accessMsg">Verifying admin credentials…</div>
+<!-- ═══════ LOADING ═══════ -->
+<div id="loadingScreen">
+  <div class="screen-logo">SEVEN<span style="color:var(--accent3)">FX</span></div>
+  <div class="screen-spinner"></div>
+  <div class="screen-msg">Verifying admin access…</div>
 </div>
 
-<!-- ── ADMIN APP ── -->
+<!-- ═══════ ACCESS DENIED ═══════ -->
+<div id="accessDenied">
+  <div class="denied-icon">🔒</div>
+  <div class="denied-title">Access Denied</div>
+  <div class="denied-sub">This page is restricted to SevenFX administrators only.</div>
+  <button class="denied-btn" onclick="window.location.href='index.html'">← Return to Website</button>
+</div>
+
+
+<!-- ═══════ ADMIN LOGIN SCREEN ═══════ -->
+<div id="adminLoginScreen">
+  <div class="login-card">
+    <div class="login-logo">SEVEN<span>FX</span></div>
+    <div class="login-sub">// Admin Dashboard</div>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-field">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="admin@email.com" autocomplete="email"
+             onkeydown="if(event.key==='Enter') document.getElementById('loginPass').focus()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••"
+             onkeydown="if(event.key==='Enter') adminLogin()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="adminLogin()">Sign In →</button>
+    <div class="login-back"><a href="index.html">← Return to Website</a></div>
+  </div>
+</div>
+
+<!-- ═══════ ADMIN APP ═══════ -->
 <div id="adminApp">
+
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-text">Seven<span>FX</span></div>
-      <div class="logo-sub">Admin Dashboard</div>
-      <div class="sidebar-admin-badge">⚙ ADMIN ACCESS</div>
+      <div class="sidebar-logo-text">SEVEN<span style="color:var(--accent3)">FX</span></div>
+      <div class="sidebar-logo-badge">Admin</div>
+    </div>
+    <div class="sidebar-admin-info">
+      <div class="sidebar-admin-row">
+        <div class="sidebar-admin-avatar" id="sidebarAvatar">A</div>
+        <div>
+          <div class="sidebar-admin-name" id="sidebarName">Admin</div>
+          <div class="sidebar-admin-role">⚙ Administrator</div>
+        </div>
+      </div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard',this)">
-        <span class="ni">📊</span> Dashboard
-      </div>
-      <div class="nav-item" data-section="users" onclick="showSection('users',this)">
-        <span class="ni">👥</span> Users
-      </div>
-      <div class="nav-item" data-section="payments" onclick="showSection('payments',this)">
-        <span class="ni">💳</span> Payments
-      </div>
-      <div class="nav-item" data-section="access" onclick="showSection('access',this)">
-        <span class="ni">🔑</span> Course Access
-      </div>
-      <div class="nav-separator"></div>
-      <div class="nav-item" data-section="courses" onclick="showSection('courses',this)">
-        <span class="ni">📚</span> Courses
-      </div>
-      <div class="nav-item" data-section="announcements" onclick="showSection('announcements',this)">
-        <span class="ni">📢</span> Announcements
-      </div>
-      <div class="nav-item" data-section="community" onclick="showSection('community',this)">
-        <span class="ni">🌐</span> Community
-      </div>
-      <div class="nav-separator"></div>
-      <div class="nav-item" data-section="settings" onclick="showSection('settings',this)">
-        <span class="ni">⚙️</span> Settings
-      </div>
-      <div class="nav-item" data-section="auditlogs" onclick="showSection('auditlogs',this)">
-        <span class="ni">📋</span> Audit Logs
-      </div>
+      <div class="nav-section-label">// Main</div>
+      <button class="nav-item active" data-panel="dashboard" onclick="switchPanel('dashboard',this)">
+        <span class="nav-item-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" data-panel="revenue" onclick="switchPanel('revenue',this)">
+        <span class="nav-item-icon">💰</span> Revenue
+      </button>
+      <button class="nav-item" data-panel="users" onclick="switchPanel('users',this)">
+        <span class="nav-item-icon">👥</span> Users
+      </button>
+      <button class="nav-item" data-panel="payments" onclick="switchPanel('payments',this)">
+        <span class="nav-item-icon">💳</span> Payments
+        <span class="nav-item-badge" id="pendingBadge" style="display:none">0</span>
+      </button>
+      <button class="nav-item" data-panel="access" onclick="switchPanel('access',this)">
+        <span class="nav-item-icon">🔓</span> Course Access
+      </button>
+      <div class="nav-section-label" style="margin-top:8px;">// Content</div>
+      <button class="nav-item" data-panel="courses" onclick="switchPanel('courses',this)">
+        <span class="nav-item-icon">📚</span> Courses
+      </button>
+      <button class="nav-item" data-panel="announcements" onclick="switchPanel('announcements',this)">
+        <span class="nav-item-icon">📣</span> Announcements
+      </button>
+      <button class="nav-item" data-panel="community" onclick="switchPanel('community',this)">
+        <span class="nav-item-icon">🌐</span> Community
+      </button>
+      <div class="nav-section-label" style="margin-top:8px;">// System</div>
+      <button class="nav-item" data-panel="settings" onclick="switchPanel('settings',this)">
+        <span class="nav-item-icon">⚙️</span> Settings
+      </button>
+      <button class="nav-item" data-panel="auditlogs" onclick="switchPanel('auditlogs',this)">
+        <span class="nav-item-icon">📋</span> Audit Logs
+      </button>
     </nav>
     <div class="sidebar-footer">
-      <div class="admin-user-info">
-        <div class="admin-avatar" id="sidebarAvatar">A</div>
-        <div class="admin-email" id="sidebarEmail">—</div>
-      </div>
-      <button class="logout-btn" onclick="doLogout()">↩ Log Out</button>
+      <button class="logout-btn" onclick="adminLogout()">
+        <span>🚪</span> Logout
+      </button>
     </div>
   </aside>
 
   <!-- TOPBAR -->
   <header class="topbar">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
-      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-title">
+      SevenFX Admin
+      <span class="topbar-breadcrumb" id="topbarBreadcrumb">/ Dashboard</span>
     </div>
     <div class="topbar-right">
-      <div class="live-dot"></div>
-      <div class="topbar-time" id="topbarClock"></div>
-      <a id="homeLink" href="#" style="font-size:.78rem;color:var(--text3);padding:4px 10px;border:1px solid var(--border);border-radius:6px;">← Website</a>
+      <span class="topbar-time" id="topbarTime"></span>
+      <button class="topbar-refresh" onclick="refreshCurrentPanel()">⟳ Refresh</button>
+      <a href="index.html" style="padding:6px 14px;border-radius:var(--r);font-size:.78rem;font-family:var(--fb);font-weight:600;background:var(--surface);border:1px solid var(--border2);color:var(--text2);text-decoration:none;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent3)'" onmouseout="this.style.borderColor='var(--border2)'">← Website</a>
     </div>
   </header>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTENT -->
   <main class="main">
 
-    <!-- ══ DASHBOARD ══ -->
-    <div class="section active" id="sec-dashboard">
-      <div class="section-header">
-        <div>
-          <div class="section-title">Welcome back, <span class="grad-text" id="dashAdminName">Admin</span></div>
-          <div class="section-sub">SevenFX Operations Center — Real-time overview</div>
+    <!-- ═══ DASHBOARD PANEL ═══ -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Dashboard</h1>
+          <p>Welcome back, <span id="dashWelcomeName">Admin</span>. Here's your platform overview.</p>
         </div>
-        <button class="refresh-btn" onclick="loadDashboard()">⟳ Refresh</button>
+        <button class="hdr-btn hdr-btn-secondary" onclick="loadDashboard()">⟳ Refresh Stats</button>
       </div>
-      <div class="stat-grid">
-        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Total Users</div><div class="stat-val" id="ds-users">—</div></div>
-        <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-label">Total Payments</div><div class="stat-val" id="ds-payments">—</div></div>
-        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">Pending Approvals</div><div class="stat-val" id="ds-pending">—</div></div>
-        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Approved Users</div><div class="stat-val" id="ds-approved">—</div></div>
-        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-label">Active Courses</div><div class="stat-val" id="ds-courses">5</div></div>
-        <div class="stat-card">
-          <div class="stat-icon">💰</div>
-          <div class="stat-label">Revenue Tracker</div>
-          <div class="stat-val" style="font-size:1rem;color:var(--text3);">Coming Soon</div>
+
+      <div class="stats-grid">
+        <div class="stat-card glow-card glow-purple">
+          <div class="stat-icon" style="background:rgba(108,99,255,.15);">👥</div>
+          <div class="stat-val" id="statUsers">—</div>
+          <div class="stat-lbl">Total Users</div>
+        </div>
+        <div class="stat-card glow-card glow-cyan">
+          <div class="stat-icon" style="background:rgba(0,212,255,.12);">💳</div>
+          <div class="stat-val" id="statPayments">—</div>
+          <div class="stat-lbl">Total Payments</div>
+        </div>
+        <div class="stat-card glow-card glow-gold">
+          <div class="stat-icon" style="background:rgba(251,191,36,.12);">⏳</div>
+          <div class="stat-val" id="statPending">—</div>
+          <div class="stat-lbl">Pending Approvals</div>
+        </div>
+        <div class="stat-card glow-card glow-green">
+          <div class="stat-icon" style="background:rgba(52,211,153,.12);">✅</div>
+          <div class="stat-val" id="statApproved">—</div>
+          <div class="stat-lbl">Approved</div>
+        </div>
+        <div class="stat-card glow-card glow-purple">
+          <div class="stat-icon" style="background:rgba(167,139,250,.12);">🔓</div>
+          <div class="stat-val" id="statAccess">—</div>
+          <div class="stat-lbl">Active Enrollments</div>
+        </div>
+        <div class="stat-card glow-card glow-gold">
+          <div class="stat-icon" style="background:rgba(251,191,36,.1);">💰</div>
+          <div class="stat-val" id="statRevenue">—</div>
+          <div class="stat-lbl">Revenue Tracker</div>
+          <div class="stat-trend">Coming soon</div>
         </div>
       </div>
 
-      <!-- Quick recent payments -->
-      <div style="margin-bottom:16px;">
-        <div style="font-family:var(--font-display);font-size:.95rem;font-weight:700;margin-bottom:14px;">🕐 Recent Payments</div>
-        <div class="table-wrap">
-          <div class="scrollable-table">
-            <table>
-              <thead><tr><th>Date</th><th>Email</th><th>Course</th><th>Method</th><th>Status</th><th>Action</th></tr></thead>
-              <tbody id="dashRecentPayments"><tr><td colspan="6" class="empty-row">Loading…</td></tr></tbody>
-            </table>
-          </div>
+      <!-- Recent Payments -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⏳ Pending Payments</div>
+          <button class="hdr-btn hdr-btn-secondary" onclick="switchPanel('payments',document.querySelector('[data-panel=payments]'))">View All →</button>
         </div>
-      </div>
-    </div>
-
-    <!-- ══ USERS ══ -->
-    <div class="section" id="sec-users">
-      <div class="section-header">
-        <div><div class="section-title">Users</div><div class="section-sub">Manage registered accounts</div></div>
-        <button class="refresh-btn" onclick="loadUsers()">⟳ Refresh</button>
-      </div>
-      <div class="table-wrap">
-        <div class="table-toolbar">
-          <input class="search-input" type="text" placeholder="Search by name or email…" oninput="filterUsers(this.value)" id="userSearch">
-          <select class="filter-select" onchange="filterUsersByRole(this.value)">
-            <option value="">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-          </select>
-          <select class="filter-select" onchange="filterUsersByStatus(this.value)">
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-          </select>
-        </div>
-        <div class="scrollable-table">
+        <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Joined</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="usersBody"><tr><td colspan="7" class="empty-row">Loading…</td></tr></tbody>
+            <thead><tr><th>User</th><th>Course</th><th>Method</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="dashPendingBody"><tr class="loading-row"><td colspan="6">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Users -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 Recent Registrations</div>
+          <button class="hdr-btn hdr-btn-secondary" onclick="switchPanel('users',document.querySelector('[data-panel=users]'))">View All →</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Role</th></tr></thead>
+            <tbody id="dashUsersBody"><tr class="loading-row"><td colspan="4">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ PAYMENTS ══ -->
-    <div class="section" id="sec-payments">
-      <div class="section-header">
-        <div><div class="section-title">Payments</div><div class="section-sub">Review and approve payment submissions</div></div>
-        <div style="display:flex;gap:8px;">
-          <select class="filter-select" id="payStatusFilter" onchange="loadPayments()">
+    <!-- ═══ USERS PANEL ═══ -->
+    <div class="panel" id="panel-users">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>User Management</h1>
+          <p>View, search, and manage all registered users.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="filter-bar">
+          <input type="text" class="search-input" id="userSearch" placeholder="🔍 Search by name or email…" oninput="filterUsers()">
+          <select class="filter-select" id="userRoleFilter" onchange="filterUsers()">
+            <option value="">All Roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody id="usersBody"><tr class="loading-row"><td colspan="6">Loading users…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAYMENTS PANEL ═══ -->
+    <div class="panel" id="panel-payments">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Payment Management</h1>
+          <p>Review and approve or reject payment submissions.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="filter-bar">
+          <input type="text" class="search-input" id="paySearch" placeholder="🔍 Search by email or course…" oninput="filterPayments()">
+          <select class="filter-select" id="payStatusFilter" onchange="filterPayments()">
             <option value="">All Status</option>
-            <option value="pending" selected>Pending</option>
+            <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
-          <button class="refresh-btn" onclick="loadPayments()">⟳ Refresh</button>
         </div>
-      </div>
-      <div class="table-wrap">
-        <div class="scrollable-table">
+        <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Date</th><th>User</th><th>Email</th><th>Course</th><th>Method</th><th>Ref</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="paymentsBody"><tr><td colspan="8" class="empty-row">Loading…</td></tr></tbody>
+            <thead><tr><th>User</th><th>Email</th><th>Course</th><th>Method</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="paymentsBody"><tr class="loading-row"><td colspan="7">Loading payments…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ COURSE ACCESS ══ -->
-    <div class="section" id="sec-access">
-      <div class="section-header">
-        <div><div class="section-title">Course Access Control</div><div class="section-sub">Grant or revoke access to individual courses</div></div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <select class="filter-select" id="accessCourseFilter" onchange="loadAccess()">
+    <!-- ═══ COURSE ACCESS PANEL ═══ -->
+    <div class="panel" id="panel-access">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Course Access Control</h1>
+          <p>Manage which users have access to each course. Grant or revoke access manually.</p>
+        </div>
+        <button class="hdr-btn hdr-btn-primary" onclick="openGrantModal()">+ Grant Access</button>
+      </div>
+      <div class="card">
+        <div class="filter-bar">
+          <input type="text" class="search-input" id="accessSearch" placeholder="🔍 Search by email or course…" oninput="filterAccess()">
+          <select class="filter-select" id="accessCourseFilter" onchange="filterAccess()">
             <option value="">All Courses</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
             <option value="propfirm">Prop Firm</option>
-            <option value="mentorship">Mentorship</option>
           </select>
-          <select class="filter-select" id="accessStatusFilter" onchange="loadAccess()">
-            <option value="">All Status</option>
-            <option value="true">Granted</option>
-            <option value="false">Revoked</option>
-          </select>
-          <button class="refresh-btn" onclick="loadAccess()">⟳ Refresh</button>
-          <button class="btn-primary" onclick="openGrantModal()">+ Grant Access</button>
         </div>
-      </div>
-      <div class="table-wrap">
-        <div class="scrollable-table">
+        <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Date</th><th>User Email</th><th>Course</th><th>Status</th><th>Approved By</th><th>Actions</th></tr></thead>
-            <tbody id="accessBody"><tr><td colspan="6" class="empty-row">Loading…</td></tr></tbody>
+            <thead><tr><th>User Email</th><th>Course</th><th>Status</th><th>Approved By</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="accessBody"><tr class="loading-row"><td colspan="6">Loading access records…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ COURSES ══ -->
-    <div class="section" id="sec-courses">
-      <div class="section-header">
-        <div><div class="section-title">Course Management</div><div class="section-sub">Enable, disable, or lock individual courses</div></div>
-        <button class="refresh-btn" onclick="loadCourses()">⟳ Refresh</button>
+    <!-- ═══ COURSES PANEL ═══ -->
+    <div class="panel" id="panel-courses">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Course Management</h1>
+          <p>Enable, disable, lock, or unlock individual courses.</p>
+        </div>
       </div>
-      <div class="course-grid" id="courseGrid">
-        <!-- populated by JS -->
-      </div>
-    </div>
-
-    <!-- ══ ANNOUNCEMENTS ══ -->
-    <div class="section" id="sec-announcements">
-      <div class="section-header">
-        <div><div class="section-title">Announcements</div><div class="section-sub">Publish notices to your students</div></div>
-        <button class="refresh-btn" onclick="loadAnnouncements()">⟳ Refresh</button>
-      </div>
-      <div class="compose-box">
-        <h3>📢 New Announcement</h3>
-        <div class="form-row">
-          <div class="form-field">
-            <label class="form-label">Title</label>
-            <input class="form-input" type="text" id="annTitle" placeholder="e.g. New Webinar Scheduled">
-          </div>
-          <div class="form-field" style="max-width:180px;">
-            <label class="form-label">Type</label>
-            <select class="form-select" id="annType">
-              <option value="general">General</option>
-              <option value="course">Course Update</option>
-              <option value="webinar">Webinar</option>
-              <option value="holiday">Market Holiday</option>
-              <option value="community">Community</option>
-            </select>
+      <div class="course-mgmt-grid">
+        <div class="course-mgmt-card">
+          <div class="cmg-icon">📈</div>
+          <div class="cmg-title">Beginner Trading Course</div>
+          <div class="cmg-sub">Foundation of trading principles</div>
+          <div style="margin-bottom:12px;"><span class="badge badge-active">● Active</span></div>
+          <div class="cmg-actions">
+            <button class="action-btn btn-revoke" onclick="toast('Course locking coming soon','info')">🔒 Lock</button>
+            <button class="action-btn btn-grant" onclick="toast('Course unlocked','success')">🔓 Unlock</button>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label class="form-label">Message</label>
-            <textarea class="form-textarea" id="annBody" placeholder="Write your announcement here…"></textarea>
+        <div class="course-mgmt-card">
+          <div class="cmg-icon">📊</div>
+          <div class="cmg-title">Intermediate Course</div>
+          <div class="cmg-sub">Volume profile & market structure</div>
+          <div style="margin-bottom:12px;"><span class="badge badge-active">● Active</span></div>
+          <div class="cmg-actions">
+            <button class="action-btn btn-revoke" onclick="toast('Course locking coming soon','info')">🔒 Lock</button>
+            <button class="action-btn btn-grant" onclick="toast('Course unlocked','success')">🔓 Unlock</button>
           </div>
         </div>
-        <button class="btn-primary" onclick="postAnnouncement()">Publish Announcement</button>
-      </div>
-      <div id="announcementsList" style="display:flex;flex-direction:column;gap:12px;"></div>
-    </div>
-
-    <!-- ══ COMMUNITY ══ -->
-    <div class="section" id="sec-community">
-      <div class="section-header">
-        <div><div class="section-title">Community Links</div><div class="section-sub">Manage social platform links</div></div>
-        <button class="refresh-btn" onclick="loadCommunity()">⟳ Refresh</button>
-      </div>
-      <div class="community-grid" id="communityGrid">
-        <!-- populated by JS -->
-      </div>
-    </div>
-
-    <!-- ══ SETTINGS ══ -->
-    <div class="section" id="sec-settings">
-      <div class="section-header">
-        <div><div class="section-title">Settings</div><div class="section-sub">Platform configuration</div></div>
-        <button class="btn-primary" onclick="saveSettings()">💾 Save All Settings</button>
-      </div>
-      <div class="settings-grid">
-        <div class="settings-card">
-          <h3>🏢 Site Info</h3>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Site Name</label>
-            <input class="form-input" id="cfg-siteName" type="text" value="SevenFX">
-          </div>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Contact Email</label>
-            <input class="form-input" id="cfg-contactEmail" type="email" placeholder="admin@sevenfx.com">
-          </div>
-          <div class="form-field">
-            <label class="form-label">Telegram Username</label>
-            <input class="form-input" id="cfg-telegram" type="text" placeholder="@Seven7FxAcademy">
+        <div class="course-mgmt-card">
+          <div class="cmg-icon">🏆</div>
+          <div class="cmg-title">Advanced Trading Course</div>
+          <div class="cmg-sub">Execution models & edge</div>
+          <div style="margin-bottom:12px;"><span class="badge badge-active">● Active</span></div>
+          <div class="cmg-actions">
+            <button class="action-btn btn-revoke" onclick="toast('Course locking coming soon','info')">🔒 Lock</button>
+            <button class="action-btn btn-grant" onclick="toast('Course unlocked','success')">🔓 Unlock</button>
           </div>
         </div>
-        <div class="settings-card">
-          <h3>💰 Course Pricing</h3>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Beginner (ETB)</label>
-            <input class="form-input" id="cfg-price-beginner" type="text" placeholder="e.g. 1,500 ETB">
-          </div>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Intermediate (ETB)</label>
-            <input class="form-input" id="cfg-price-intermediate" type="text" placeholder="e.g. 2,500 ETB">
-          </div>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Advanced (ETB)</label>
-            <input class="form-input" id="cfg-price-advanced" type="text" placeholder="e.g. 3,500 ETB">
-          </div>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Prop Firm (ETB)</label>
-            <input class="form-input" id="cfg-price-propfirm" type="text" placeholder="e.g. 4,500 ETB">
-          </div>
-          <div class="form-field">
-            <label class="form-label">Mentorship (ETB)</label>
-            <input class="form-input" id="cfg-price-mentorship" type="text" placeholder="e.g. 8,000 ETB">
+        <div class="course-mgmt-card">
+          <div class="cmg-icon">🏦</div>
+          <div class="cmg-title">Prop Firm Trading Program</div>
+          <div class="cmg-sub">Funded trader operating system</div>
+          <div style="margin-bottom:12px;"><span class="badge badge-active">● Active</span></div>
+          <div class="cmg-actions">
+            <button class="action-btn btn-revoke" onclick="toast('Course locking coming soon','info')">🔒 Lock</button>
+            <button class="action-btn btn-grant" onclick="toast('Course unlocked','success')">🔓 Unlock</button>
           </div>
         </div>
-        <div class="settings-card">
-          <h3>💳 Payment Methods</h3>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">CBE Account</label>
-            <input class="form-input" id="cfg-cbe" type="text" placeholder="Account number">
-          </div>
-          <div class="form-field" style="margin-bottom:12px;">
-            <label class="form-label">Telebirr</label>
-            <input class="form-input" id="cfg-telebirr" type="text" placeholder="Phone number">
-          </div>
-          <div class="form-field">
-            <label class="form-label">Other Method</label>
-            <input class="form-input" id="cfg-other" type="text" placeholder="e.g. PayPal email">
+        <div class="course-mgmt-card">
+          <div class="cmg-icon">🎯</div>
+          <div class="cmg-title">1-on-1 Mentorship</div>
+          <div class="cmg-sub">Private coaching sessions</div>
+          <div style="margin-bottom:12px;"><span class="badge" style="background:rgba(251,191,36,.1);color:var(--gold);border:1px solid rgba(251,191,36,.3);">Coming Soon</span></div>
+          <div class="cmg-actions">
+            <button class="action-btn btn-grant" onclick="toast('Mentorship slots coming soon','info')">Enable</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ AUDIT LOGS ══ -->
-    <div class="section" id="sec-auditlogs">
-      <div class="section-header">
-        <div><div class="section-title">Audit Logs</div><div class="section-sub">All admin actions are recorded here</div></div>
-        <button class="refresh-btn" onclick="loadAuditLogs()">⟳ Refresh</button>
+    <!-- ═══ ANNOUNCEMENTS PANEL ═══ -->
+    <div class="panel" id="panel-announcements">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Announcements</h1>
+          <p>Create announcements visible to all users on the platform.</p>
+        </div>
+        <button class="hdr-btn hdr-btn-primary" onclick="openAnnModal()">+ New Announcement</button>
       </div>
-      <div class="audit-timeline" id="auditTimeline">
-        <div class="empty-row" style="text-align:center;color:var(--text3);padding:24px;">Loading…</div>
+      <div id="annList"><div style="color:var(--text3);font-size:.85rem;padding:20px 0;">Loading announcements…</div></div>
+    </div>
+
+    <!-- ═══ COMMUNITY PANEL ═══ -->
+    <div class="panel" id="panel-community">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Community Management</h1>
+          <p>Manage and update community links displayed on the website.</p>
+        </div>
+        <button class="hdr-btn hdr-btn-primary" onclick="saveCommunity()">💾 Save Links</button>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">🌐 Social & Community Links</div>
+        <div class="settings-grid">
+          <div class="field"><label>📱 Telegram Group</label><input type="text" id="commTelegram" placeholder="https://t.me/..."></div>
+          <div class="field"><label>📸 Instagram</label><input type="text" id="commInstagram" placeholder="https://instagram.com/..."></div>
+          <div class="field"><label>🎵 TikTok</label><input type="text" id="commTiktok" placeholder="https://tiktok.com/..."></div>
+          <div class="field"><label>▶ YouTube</label><input type="text" id="commYoutube" placeholder="https://youtube.com/..."></div>
+          <div class="field"><label>✉ Contact Email</label><input type="email" id="commEmail" placeholder="contact@email.com"></div>
+          <div class="field"><label>📱 Receipt Telegram</label><input type="text" id="commReceiptTg" placeholder="@username"></div>
+        </div>
+      </div>
+      <div class="community-grid" style="margin-top:8px;" id="communityPreview">
+        <!-- populated by loadCommunity -->
+      </div>
+    </div>
+
+
+    <!-- ═══ SETTINGS PANEL ═══ -->
+    <div class="panel" id="panel-settings">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Settings</h1>
+          <p>Platform configuration and admin preferences.</p>
+        </div>
+        <button class="hdr-btn hdr-btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">🏢 Platform Info</div>
+        <div class="settings-grid">
+          <div class="field"><label>Site Name</label><input type="text" id="cfgSiteName" value="SevenFX Academy"></div>
+          <div class="field"><label>Contact Email</label><input type="email" id="cfgEmail" value="seven777fx@gmail.com"></div>
+          <div class="field"><label>Telegram Username</label><input type="text" id="cfgTelegram" value="@ftadesse"></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">💳 Payment Accounts</div>
+        <div class="settings-grid">
+          <div class="field"><label>CBE Account</label><input type="text" id="cfgCBE" value="1000355263208"></div>
+          <div class="field"><label>Telebirr Number</label><input type="text" id="cfgTelebirr" value="0913053057"></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">📚 Course Pricing</div>
+        <div class="settings-grid">
+          <div class="field"><label>Beginner (ETB)</label><input type="text" id="cfgP1" value="3,500 ETB"></div>
+          <div class="field"><label>Intermediate (ETB)</label><input type="text" id="cfgP2" value="5,500 ETB"></div>
+          <div class="field"><label>Advanced (ETB)</label><input type="text" id="cfgP3" value="8,000 ETB"></div>
+          <div class="field"><label>Prop Firm (ETB)</label><input type="text" id="cfgP4" value="12,000 ETB"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ REVENUE PANEL ═══ -->
+    <div class="panel" id="panel-revenue">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Revenue Tracker</h1>
+          <p>Financial overview calculated from approved payments.</p>
+        </div>
+        <button class="hdr-btn hdr-btn-secondary" onclick="loadRevenue()">⟳ Refresh</button>
+      </div>
+      <div class="stats-grid" id="revenueStats">
+        <div class="stat-card glow-card glow-green">
+          <div class="stat-icon" style="background:rgba(52,211,153,.12);">💰</div>
+          <div class="stat-val" id="revTotal">—</div>
+          <div class="stat-lbl">Total Revenue (Approved)</div>
+        </div>
+        <div class="stat-card glow-card glow-gold">
+          <div class="stat-icon" style="background:rgba(251,191,36,.12);">⏳</div>
+          <div class="stat-val" id="revPending">—</div>
+          <div class="stat-lbl">Pending Revenue</div>
+        </div>
+        <div class="stat-card glow-card glow-purple">
+          <div class="stat-icon" style="background:rgba(108,99,255,.12);">📊</div>
+          <div class="stat-val" id="revCount">—</div>
+          <div class="stat-lbl">Total Transactions</div>
+        </div>
+        <div class="stat-card glow-card glow-cyan">
+          <div class="stat-icon" style="background:rgba(0,212,255,.12);">📈</div>
+          <div class="stat-val" id="revApprCount">—</div>
+          <div class="stat-lbl">Approved Payments</div>
+        </div>
+      </div>
+      <!-- Revenue by Course -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;" class="rev-grid">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📚 Revenue by Course</div></div>
+          <div class="card-pad" id="revByCourse"><div style="color:var(--text3);font-size:.85rem;">Loading…</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">💳 Revenue by Method</div></div>
+          <div class="card-pad" id="revByMethod"><div style="color:var(--text3);font-size:.85rem;">Loading…</div></div>
+        </div>
+      </div>
+      <!-- All approved payments table -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">✅ Approved Payment Records</div></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Email</th><th>Course</th><th>Method</th><th>Price</th><th>Date</th></tr></thead>
+            <tbody id="revTableBody"><tr class="loading-row"><td colspan="5">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUDIT LOGS PANEL ═══ -->
+    <div class="panel" id="panel-auditlogs">
+      <div class="section-hdr">
+        <div class="section-hdr-left">
+          <h1>Audit Logs</h1>
+          <p>Complete history of all admin actions.</p>
+        </div>
+        <button class="hdr-btn hdr-btn-secondary" onclick="loadAuditLogs()">⟳ Refresh</button>
+      </div>
+      <div class="card">
+        <div class="card-pad" id="auditList">
+          <div style="color:var(--text3);font-size:.85rem;">Loading audit logs…</div>
+        </div>
       </div>
     </div>
 
   </main>
 </div>
 
-<!-- ── GRANT ACCESS MODAL ── -->
-<div class="modal-overlay" id="grantModal" onclick="if(event.target===this)closeGrantModal()">
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div id="toastContainer"></div>
+
+<!-- ═══ USER DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="userModal">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeGrantModal()">✕</button>
-    <div class="modal-title">🔑 Grant Course Access</div>
-    <div class="form-field" style="margin-bottom:12px;">
-      <label class="form-label">User Email</label>
-      <input class="form-input" id="grantEmail" type="email" placeholder="user@example.com">
+    <div class="modal-hdr">
+      <h3>👤 User Profile</h3>
+      <button class="modal-close" onclick="closeModal('userModal')">✕</button>
     </div>
-    <div class="form-field" style="margin-bottom:12px;">
-      <label class="form-label">User UID (from Firestore)</label>
-      <input class="form-input" id="grantUID" type="text" placeholder="Firebase UID">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Course</label>
-      <select class="form-select" id="grantCourse">
-        <option value="beginner">Beginner Trading Course</option>
-        <option value="intermediate">Intermediate Trading Course</option>
-        <option value="advanced">Advanced Trading Course</option>
-        <option value="propfirm">Prop Firm Trading Program</option>
-        <option value="mentorship">Mentorship</option>
-      </select>
-    </div>
+    <div class="modal-body" id="userModalBody">Loading…</div>
     <div class="modal-footer">
-      <button class="action-btn btn-view" onclick="closeGrantModal()">Cancel</button>
-      <button class="btn-primary" onclick="manualGrantAccess()">Grant Access</button>
+      <button class="mf-btn mf-cancel" onclick="closeModal('userModal')">Close</button>
     </div>
   </div>
 </div>
 
-<!-- ── USER DETAIL MODAL ── -->
-<div class="modal-overlay" id="userModal" onclick="if(event.target===this)closeUserModal()">
+<!-- ═══ GRANT ACCESS MODAL ═══ -->
+<div class="modal-overlay" id="grantModal">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeUserModal()">✕</button>
-    <div class="modal-title" id="userModalTitle">User Profile</div>
-    <div id="userModalBody" style="color:var(--text2);font-size:.85rem;line-height:1.8;"></div>
+    <div class="modal-hdr">
+      <h3>🔓 Grant Course Access</h3>
+      <button class="modal-close" onclick="closeModal('grantModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>User Email</label><input type="email" id="grantEmail" placeholder="user@email.com"></div>
+      <div class="field"><label>User UID (optional — auto-resolved)</label><input type="text" id="grantUID" placeholder="Leave blank to look up by email"></div>
+      <div class="field">
+        <label>Select Course</label>
+        <select id="grantCourse">
+          <option value="beginner">Beginner Trading Course</option>
+          <option value="intermediate">Intermediate Trading Course</option>
+          <option value="advanced">Advanced Trading Course</option>
+          <option value="propfirm">Prop Firm Trading Program</option>
+        </select>
+      </div>
+    </div>
     <div class="modal-footer">
-      <button class="action-btn btn-view" onclick="closeUserModal()">Close</button>
+      <button class="mf-btn mf-cancel" onclick="closeModal('grantModal')">Cancel</button>
+      <button class="mf-btn mf-primary" onclick="submitGrantAccess()">Grant Access</button>
     </div>
   </div>
 </div>
 
-<!-- ── PAYMENT DETAIL MODAL ── -->
-<div class="modal-overlay" id="payModal" onclick="if(event.target===this)closePayModal()">
+<!-- ═══ ANNOUNCEMENT MODAL ═══ -->
+<div class="modal-overlay" id="annModal">
   <div class="modal-box">
-    <button class="modal-close" onclick="closePayModal()">✕</button>
-    <div class="modal-title">Payment Details</div>
-    <div id="payModalBody" style="color:var(--text2);font-size:.85rem;line-height:1.9;"></div>
+    <div class="modal-hdr">
+      <h3>📣 New Announcement</h3>
+      <button class="modal-close" onclick="closeModal('annModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Title</label><input type="text" id="annTitle" placeholder="e.g. New Course Available"></div>
+      <div class="field"><label>Message</label><textarea id="annBody" placeholder="Write your announcement…"></textarea></div>
+      <div class="field">
+        <label>Type</label>
+        <select id="annType">
+          <option value="info">📢 Info</option>
+          <option value="course">📚 Course Update</option>
+          <option value="webinar">🎓 Webinar</option>
+          <option value="holiday">🗓 Market Holiday</option>
+          <option value="community">🌐 Community</option>
+        </select>
+      </div>
+    </div>
     <div class="modal-footer">
-      <button class="action-btn btn-view" onclick="closePayModal()">Close</button>
+      <button class="mf-btn mf-cancel" onclick="closeModal('annModal')">Cancel</button>
+      <button class="mf-btn mf-primary" onclick="submitAnnouncement()">Publish</button>
     </div>
   </div>
 </div>
 
-<!-- ── NOTIFICATION ── -->
-<div id="adminNotif"></div>
-
-<!-- ── FIREBASE + LOGIC ── -->
-<script>
-// Set the home link immediately before Firebase loads (non-module, runs synchronously)
-(function() {
-  const here = window.location.href;
-  const homeURL = here.includes('admin.html')
-    ? here.replace(/admin\.html.*$/, 'index.html')
-    : 'https://sevenfx.firebaseapp.com';
-  const el = document.getElementById('homeLink');
-  if (el) el.href = homeURL;
-})();
-</script>
+<!-- ═══════════════════════════════════════════
+     FIREBASE MODULE
+═══════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, getDocs, serverTimestamp, limit
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut,
+         signInWithEmailAndPassword }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+         collection, query, where, orderBy, getDocs, serverTimestamp, limit }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDozcA-cfejrnyx5yF2lW1w1_cjlgZWv1Q",
-  authDomain: "sevenfx.firebaseapp.com",
-  projectId: "sevenfx",
-  storageBucket: "sevenfx.firebasestorage.app",
+  apiKey:            "AIzaSyDozcA-cfejrnyx5yF2lW1w1_cjlgZWv1Q",
+  authDomain:        "sevenfx.firebaseapp.com",
+  projectId:         "sevenfx",
+  storageBucket:     "sevenfx.firebasestorage.app",
   messagingSenderId: "665447101397",
-  appId: "1:665447101397:web:338eb69a6cf8a670ad035c",
-  measurementId: "G-W8CHSRG322"
+  appId:             "1:665447101397:web:338eb69a6cf8a670ad035c",
+  measurementId:     "G-W8CHSRG322"
 };
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// ─── helpers ───────────────────────────────────────
+// ── Globals ──────────────────────────────────────────────
+let currentAdmin     = null;
+let _allUsers        = [];
+let _allPayments     = [];
+let _allAccess       = [];
+let _currentPanel    = 'dashboard';
+
 const COURSE_NAMES = {
-  beginner:'Beginner Trading Course',
-  intermediate:'Intermediate Trading Course',
-  advanced:'Advanced Trading Course',
-  propfirm:'Prop Firm Trading Program',
-  mentorship:'Mentorship'
+  beginner:     'Beginner Trading Course',
+  intermediate: 'Intermediate Course',
+  advanced:     'Advanced Course',
+  propfirm:     'Prop Firm Program',
 };
 
+// ── Helpers ───────────────────────────────────────────────
 function fmtDate(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
 }
-
-function notify(msg, type='ok') {
-  const el = document.getElementById('adminNotif');
-  el.textContent = msg;
-  el.className = 'show notif-' + type;
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+function fmtDateTime(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+    d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 }
+function esc(s){ return (s||'').replace(/[<>"'&]/g,c=>({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c])); }
 
-async function auditLog(action, details='') {
+window.toast = function(msg, type='success') {
+  const c = document.getElementById('toastContainer');
+  const icons = {success:'✓',error:'✕',info:'ℹ'};
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(() => { el.style.animation = 'slideOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3500);
+};
+
+window.openModal = function(id) { document.getElementById(id).classList.add('open'); }
+window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Audit log writer ─────────────────────────────────────
+async function writeAuditLog(action, detail) {
   try {
     await addDoc(collection(db,'auditLogs'), {
-      action, details,
-      adminEmail: auth.currentUser?.email || 'unknown',
-      timestamp: serverTimestamp()
+      action,
+      detail,
+      adminEmail: currentAdmin?.email || 'unknown',
+      timestamp:  serverTimestamp(),
     });
-  } catch(e) { console.warn('[Audit]', e.message); }
+  } catch(e) { console.warn('[Audit] Failed to write log:', e.message); }
 }
 
-// ─── Admin guard ───────────────────────────────────
-let _currentAdmin = null;
-let _authResolved = false;
+// ── Admin login ──────────────────────────────────────────
+window.adminLogin = async function() {
+  const email = (document.getElementById('loginEmail').value||'').trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value || '';
+  const errEl = document.getElementById('loginErr');
+  const btn   = document.getElementById('loginBtn');
+  errEl.style.display = 'none';
 
-// Ensure session is restored from localStorage before anything fires
-setPersistence(auth, browserLocalPersistence).catch(e => console.warn('[SevenFX Admin] Persistence warning:', e.message));
-
-// Fallback: if onAuthStateChanged never fires within 8s, show not-logged-in
-const authTimeout = setTimeout(() => {
-  if (!_authResolved) {
-    console.warn('[SevenFX Admin] Auth timeout — no session restored after 8s');
-    showDenied('You must be logged in to access this page.');
-  }
-}, 8000);
-
-onAuthStateChanged(auth, async user => {
-  clearTimeout(authTimeout);
-  _authResolved = true;
-
-  const screen = document.getElementById('accessScreen');
-  const msg    = document.getElementById('accessMsg');
-
-  // ── Debug: Step 1 ──
-  console.log('[SevenFX Admin] ── Auth State Changed ──');
-  console.log('[SevenFX Admin] User object:', user);
-
-  if (!user) {
-    console.warn('[SevenFX Admin] No authenticated user. Showing login wall.');
-    showDenied('You must be logged in to access this page.');
-    return;
-  }
-
-  // ── Debug: Step 2 ──
-  console.log('[SevenFX Admin] UID:', user.uid);
-  console.log('[SevenFX Admin] Email:', user.email);
-
-  msg.textContent = 'Checking admin privileges…';
-
-  // ── Step 3: Query admins/{uid} (document ID = Firebase UID) ──
-  const adminDocPath = `admins/${user.uid}`;
-  console.log('[SevenFX Admin] Querying Firestore path:', adminDocPath);
-
-  let isAdmin = false;
-  let adminByEmail = false;
+  if (!email || !pass) { errEl.textContent='Please enter email and password.'; errEl.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
 
   try {
-    // Primary check: admins/{uid}
-    const snapByUID = await getDoc(doc(db, 'admins', user.uid));
-    console.log('[SevenFX Admin] Doc exists (by UID):', snapByUID.exists());
-    if (snapByUID.exists()) {
-      const data = snapByUID.data();
-      console.log('[SevenFX Admin] Doc data (by UID):', data);
-      console.log('[SevenFX Admin] role field:', data.role);
-      // Accept if doc exists regardless of role field, OR if role === 'admin'
-      if (data.role === 'admin' || snapByUID.exists()) {
-        isAdmin = true;
-        console.log('[SevenFX Admin] ✅ Admin verified via UID document.');
-      }
-    }
-
-    // Fallback check: admins/{email} (legacy support)
-    if (!isAdmin && user.email) {
-      const snapByEmail = await getDoc(doc(db, 'admins', user.email.toLowerCase()));
-      console.log('[SevenFX Admin] Doc exists (by email):', snapByEmail.exists());
-      if (snapByEmail.exists()) {
-        const data = snapByEmail.data();
-        console.log('[SevenFX Admin] Doc data (by email):', data);
-        isAdmin = true;
-        adminByEmail = true;
-        console.log('[SevenFX Admin] ✅ Admin verified via email document (legacy).');
-      }
-    }
-
-    // Fallback check: check users/{uid} for role field
-    if (!isAdmin) {
-      const userSnap = await getDoc(doc(db, 'users', user.uid));
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        console.log('[SevenFX Admin] users doc data:', userData);
-        if (userData.role === 'admin') {
-          isAdmin = true;
-          console.log('[SevenFX Admin] ✅ Admin verified via users/{uid}.role field.');
-        }
-      }
-    }
-
+    await signInWithEmailAndPassword(auth, email, pass);
+    // onAuthStateChanged will handle the rest
   } catch(e) {
-    console.error('[SevenFX Admin] ❌ Firestore query error:', e.code, e.message);
-    // If it's a permissions error, show a clearer message
-    if (e.code === 'permission-denied') {
-      showDenied('Firestore permission denied. Check your security rules for the admins collection.');
-      return;
-    }
+    btn.disabled = false; btn.textContent = 'Sign In →';
+    const msgs = {
+      'auth/user-not-found':    'No account found with this email.',
+      'auth/wrong-password':    'Incorrect password.',
+      'auth/invalid-credential':'Incorrect email or password.',
+      'auth/too-many-requests': 'Too many attempts. Please wait.',
+      'auth/invalid-email':     'Invalid email address.',
+    };
+    errEl.textContent = msgs[e.code] || ('Error: ' + e.code);
+    errEl.style.display = 'block';
   }
+};
 
-  console.log('[SevenFX Admin] Final isAdmin result:', isAdmin);
-
-  if (!isAdmin) {
-    console.warn('[SevenFX Admin] ❌ Access denied for UID:', user.uid, '/ Email:', user.email);
-    showDenied('Access Denied. You do not have admin privileges.');
+// ── Admin verification ───────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    // Not signed in → show login screen
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('adminLoginScreen').style.display = 'flex';
     return;
   }
 
-  // ── Grant access ──
-  _currentAdmin = user;
-  console.log('[SevenFX Admin] ✅ Access granted. Loading dashboard…');
+  // Signed in → verify admin status in Firestore
+  // Admins collection: document ID = email (lowercase)
+  let isAdmin = false;
+  try {
+    const snapEmail = await getDoc(doc(db,'admins', user.email.toLowerCase()));
+    if (snapEmail.exists()) isAdmin = true;
+  } catch(e) { console.warn('[AdminVerify] Firestore error:', e.message); }
+
+  // Also check by UID if email doc not found
+  if (!isAdmin) {
+    try {
+      const snapUID = await getDoc(doc(db,'admins', user.uid));
+      if (snapUID.exists() && (snapUID.data().role === 'admin' || snapUID.data().email === user.email)) {
+        isAdmin = true;
+      }
+    } catch(e) {}
+  }
+
+  if (!isAdmin) {
+    // Not an admin → sign them out and show denied
+    await signOut(auth);
+    document.getElementById('loadingScreen').style.display  = 'none';
+    document.getElementById('adminLoginScreen').style.display = 'none';
+    document.getElementById('accessDenied').style.display   = 'flex';
+    return;
+  }
+
+  // ✅ Admin confirmed — hide all screens, show app
+  currentAdmin = user;
+  document.getElementById('loadingScreen').style.display    = 'none';
+  document.getElementById('adminLoginScreen').style.display = 'none';
+  document.getElementById('accessDenied').style.display     = 'none';
+  document.getElementById('adminApp').style.display         = 'block';
 
   const name = user.displayName || user.email.split('@')[0];
-  document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('sidebarEmail').textContent = user.email;
-  document.getElementById('dashAdminName').textContent = name;
-  screen.classList.add('hide');
-  setTimeout(() => { screen.style.display='none'; }, 450);
-  document.getElementById('adminApp').classList.add('show');
-  await loadDashboard();
+  document.getElementById('sidebarAvatar').textContent      = name.charAt(0).toUpperCase();
+  document.getElementById('sidebarName').textContent        = name;
+  document.getElementById('dashWelcomeName').textContent    = name;
+
+  loadDashboard();
+  startClock();
+  loadSettings(); // pre-load settings
 });
 
-// Detect the base URL of the main site dynamically.
-// If admin.html is served from the same origin as index.html, use that.
-// Otherwise fall back to the known production URL.
-function getHomeURL() {
-  const here = window.location.href;
-  // If hosted alongside index.html (same folder), just go to root path
-  if (here.includes('admin.html')) {
-    return here.replace(/admin\.html.*$/, 'index.html');
+function showDenied() {
+  document.getElementById('loadingScreen').style.display  = 'none';
+  document.getElementById('accessDenied').style.display   = 'flex';
+}
+
+// ── Clock ─────────────────────────────────────────────────
+function startClock() {
+  function tick() {
+    const el = document.getElementById('topbarTime');
+    if (el) el.textContent = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   }
-  return 'https://sevenfx.firebaseapp.com';
+  tick(); setInterval(tick, 1000);
 }
 
-function showDenied(msg) {
-  const screen = document.getElementById('accessScreen');
-  const homeURL = getHomeURL();
-  const isAccessDenied = msg.startsWith('Access');
-  screen.style.display = 'flex';
-  screen.classList.remove('hide');
-  screen.innerHTML = `
-    <div class="access-denied-box">
-      <h2>🚫 ${isAccessDenied ? 'Access Denied' : 'Not Logged In'}</h2>
-      <p>${msg}</p>
-      <a href="${homeURL}">← Return to Website</a>
-    </div>`;
-}
-
-window.doLogout = async function() {
-  await signOut(auth);
-  window.location.href = getHomeURL();
-};
-
-// ─── Navigation ────────────────────────────────────
-const SECTION_TITLES = {
-  dashboard:'Dashboard', users:'Users', payments:'Payments',
-  access:'Course Access', courses:'Courses', announcements:'Announcements',
-  community:'Community', settings:'Settings', auditlogs:'Audit Logs'
-};
-
-window.showSection = function(id, el) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+// ── Panel switching ───────────────────────────────────────
+window.switchPanel = function(panel, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('sec-' + id).classList.add('active');
+  const el = document.getElementById('panel-' + panel);
   if (el) el.classList.add('active');
-  document.getElementById('topbarTitle').textContent = SECTION_TITLES[id] || id;
-  // Auto-load
+  if (btn) btn.classList.add('active');
+  _currentPanel = panel;
+  document.getElementById('topbarBreadcrumb').textContent = '/ ' + panel.charAt(0).toUpperCase() + panel.slice(1);
+
   const loaders = {
-    users: loadUsers, payments: loadPayments, access: loadAccess,
-    courses: loadCourses, announcements: loadAnnouncements,
-    community: loadCommunity, settings: loadSettings, auditlogs: loadAuditLogs
+    dashboard:    loadDashboard,
+    users:        loadUsers,
+    payments:     loadPayments,
+    access:       loadAccess,
+    announcements:loadAnnouncements,
+    auditlogs:    loadAuditLogs,
+    revenue:      loadRevenue,
+    community:    loadCommunity,
+    settings:     loadSettings,
   };
-  if (loaders[id]) loaders[id]();
-  // Close mobile sidebar
-  document.getElementById('sidebar').classList.remove('mobile-open');
+  if (loaders[panel]) loaders[panel]();
+
+  // Mobile: close sidebar
+  if (window.innerWidth <= 768) toggleSidebar();
 };
 
 window.toggleSidebar = function() {
-  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
 };
 
-// ─── Clock ─────────────────────────────────────────
-function updateClock() {
-  document.getElementById('topbarClock').textContent = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-}
-setInterval(updateClock, 1000); updateClock();
+window.refreshCurrentPanel = function() {
+  switchPanel(_currentPanel, document.querySelector(`[data-panel="${_currentPanel}"]`));
+};
 
-// ═══════════════════════════════════════════════════
+window.adminLogout = async function() {
+  await signOut(auth);
+  window.location.href = 'index.html';
+};
+
+// ══════════════════════════════════════════════
 // DASHBOARD
-// ═══════════════════════════════════════════════════
-window.loadDashboard = async function() {
-  // Stats
+// ══════════════════════════════════════════════
+async function loadDashboard() {
   try {
     const [usersSnap, paymentsSnap, accessSnap] = await Promise.all([
       getDocs(collection(db,'users')),
       getDocs(collection(db,'payments')),
-      getDocs(query(collection(db,'courseAccess'), where('access','==',true)))
+      getDocs(collection(db,'courseAccess')),
     ]);
-    let pending=0;
-    paymentsSnap.forEach(d => { if(d.data().status==='pending') pending++; });
-    document.getElementById('ds-users').textContent    = usersSnap.size;
-    document.getElementById('ds-payments').textContent = paymentsSnap.size;
-    document.getElementById('ds-pending').textContent  = pending;
-    document.getElementById('ds-approved').textContent = accessSnap.size;
-  } catch(e) { console.warn('Dashboard stats:', e.message); }
 
-  // Recent payments
-  const tbody = document.getElementById('dashRecentPayments');
-  try {
-    let snap;
-    try { snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc'), limit(8))); }
-    catch(e) { snap = await getDocs(collection(db,'payments')); }
-    const rows = [];
-    snap.forEach(d => {
+    let pending=0, approved=0;
+    paymentsSnap.forEach(d => {
+      const s = d.data().status;
+      if (s === 'pending')  pending++;
+      if (s === 'approved') approved++;
+    });
+
+    document.getElementById('statUsers').textContent    = usersSnap.size;
+    document.getElementById('statPayments').textContent = paymentsSnap.size;
+    document.getElementById('statPending').textContent  = pending;
+    document.getElementById('statApproved').textContent = approved;
+    document.getElementById('statAccess').textContent   = accessSnap.size;
+    document.getElementById('statRevenue').textContent  = '—';
+
+    // Badge
+    const badge = document.getElementById('pendingBadge');
+    badge.textContent = pending;
+    badge.style.display = pending > 0 ? 'flex' : 'none';
+
+    // Pending payments table
+    const pendingRows = [];
+    paymentsSnap.forEach(d => {
       const data = d.data();
-      const date = fmtDate(data.submittedAt);
-      const statusClass = data.status==='approved'?'approved':data.status==='rejected'?'rejected':'pending';
-      const approveBtn = data.status!=='approved'
-        ? `<button class="action-btn btn-approve" onclick="approvePayment('${d.id}','${data.uid||''}','${data.courseId||''}','${(data.email||'').replace(/'/g,"\'")}')">✓ Approve</button>` : '';
-      const rejectBtn = data.status!=='rejected'
-        ? `<button class="action-btn btn-reject" onclick="rejectPayment('${d.id}','${data.uid||''}','${data.courseId||''}','${(data.email||'').replace(/'/g,"\'")}')">✕ Reject</button>` : '';
-      rows.push(`<tr>
-        <td style="white-space:nowrap;">${date}</td>
-        <td style="font-size:.78rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${data.email||'—'}</td>
-        <td style="white-space:nowrap;">${COURSE_NAMES[data.courseId]||data.courseId||'—'}</td>
-        <td>${data.paymentMethod||'—'}</td>
-        <td><span class="badge badge-${statusClass}">${data.status||'pending'}</span></td>
-        <td>${approveBtn}${rejectBtn}</td>
+      if (data.status !== 'pending') return;
+      pendingRows.push(`<tr>
+        <td class="strong">${esc(data.email?.split('@')[0]||'—')}</td>
+        <td>${esc(COURSE_NAMES[data.courseId]||data.courseId||'—')}</td>
+        <td>${esc(data.paymentMethod||'—')}</td>
+        <td style="font-size:.76rem;font-family:var(--fm);">${fmtDate(data.submittedAt)}</td>
+        <td><span class="badge badge-pending">Pending</span></td>
+        <td>
+          <button class="action-btn btn-approve" onclick="approvePayment('${d.id}','${esc(data.uid)}','${esc(data.courseId)}','${esc(data.email)}')">✓ Approve</button>
+          <button class="action-btn btn-reject"  onclick="rejectPayment('${d.id}','${esc(data.uid)}','${esc(data.courseId)}')">✕ Reject</button>
+        </td>
       </tr>`);
     });
-    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" class="empty-row">No payments yet.</td></tr>';
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-row" style="color:var(--red);">Error: ${e.message}</td></tr>`;
-  }
-};
+    const pb = document.getElementById('dashPendingBody');
+    pb.innerHTML = pendingRows.length ? pendingRows.join('') : '<tr class="empty-row"><td colspan="6">No pending payments 🎉</td></tr>';
 
-// ═══════════════════════════════════════════════════
-// USERS
-// ═══════════════════════════════════════════════════
-let _allUsers = [];
-
-window.loadUsers = async function() {
-  const tbody = document.getElementById('usersBody');
-  tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Loading…</td></tr>';
-  try {
-    const snap = await getDocs(collection(db,'users'));
-    _allUsers = [];
-    snap.forEach(d => _allUsers.push({ id: d.id, ...d.data() }));
-    _allUsers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    renderUsers(_allUsers);
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-row" style="color:var(--red);">Error: ${e.message}</td></tr>`;
-  }
-};
-
-function renderUsers(list) {
-  const tbody = document.getElementById('usersBody');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-row">No users found.</td></tr>'; return; }
-  tbody.innerHTML = list.map(u => {
-    const status = u.suspended ? 'suspended' : 'active';
-    const safeEmail = (u.email||'').replace(/'/g,"\'");
-    const safeId = u.id;
-    return `<tr>
-      <td style="white-space:nowrap;font-size:.75rem;">${fmtDate(u.createdAt)}</td>
-      <td style="font-weight:600;">${u.name||u.displayName||'—'}</td>
-      <td style="font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.email||'—'}</td>
-      <td style="font-family:var(--font-mono);font-size:.77rem;">${u.phone||'—'}</td>
+    // Recent users table
+    const recentUsers = [];
+    usersSnap.forEach(d => recentUsers.push(d.data()));
+    recentUsers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    const ub = document.getElementById('dashUsersBody');
+    ub.innerHTML = recentUsers.slice(0,5).map(u => `<tr>
+      <td class="strong">${esc(u.username||'—')}</td>
+      <td style="font-size:.8rem;">${esc(u.email||'—')}</td>
+      <td style="font-size:.76rem;font-family:var(--fm);">${fmtDate(u.createdAt)}</td>
       <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
-      <td><span class="badge badge-${status}">${status}</span></td>
-      <td style="white-space:nowrap;">
-        <button class="action-btn btn-view" onclick="viewUser('${safeId}')">👁 View</button>
-        ${u.suspended
-          ? `<button class="action-btn btn-activate" onclick="activateUser('${safeId}')">✓ Activate</button>`
-          : `<button class="action-btn btn-suspend" onclick="suspendUser('${safeId}','${safeEmail}')">⊘ Suspend</button>`
-        }
-        <button class="action-btn btn-grant" onclick="quickGrant('${safeEmail}','${safeId}')">🔑 Access</button>
-      </td>
-    </tr>`;
-  }).join('');
+    </tr>`).join('') || '<tr class="empty-row"><td colspan="4">No users yet.</td></tr>';
+
+  } catch(e) {
+    console.error('[Dashboard] Error:', e);
+    toast('Failed to load dashboard: ' + e.message, 'error');
+  }
 }
 
-window.filterUsers = function(val) {
-  const q = val.toLowerCase();
-  renderUsers(_allUsers.filter(u => (u.email||'').toLowerCase().includes(q) || (u.name||'').toLowerCase().includes(q)));
-};
-window.filterUsersByRole = function(role) {
-  renderUsers(role ? _allUsers.filter(u => (u.role||'user')===role) : _allUsers);
-};
-window.filterUsersByStatus = function(status) {
-  if (!status) { renderUsers(_allUsers); return; }
-  renderUsers(_allUsers.filter(u => status==='suspended' ? u.suspended : !u.suspended));
-};
-
-window.suspendUser = async function(uid, email) {
-  if (!confirm(`Suspend user: ${email}?`)) return;
+// ══════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════
+async function loadUsers() {
+  const tbody = document.getElementById('usersBody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="6">Loading…</td></tr>';
   try {
-    await updateDoc(doc(db,'users',uid), { suspended: true });
-    await auditLog('Suspend User', email);
-    notify(`User ${email} suspended.`, 'ok');
-    loadUsers();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
-};
+    const snap = await getDocs(query(collection(db,'users'), orderBy('createdAt','desc')));
+    _allUsers = [];
+    snap.forEach(d => _allUsers.push({ id: d.id, ...d.data() }));
+    renderUsers(_allUsers);
+  } catch(e) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:var(--red);">Error: ${esc(e.message)}</td></tr>`;
+  }
+}
 
-window.activateUser = async function(uid) {
-  try {
-    await updateDoc(doc(db,'users',uid), { suspended: false });
-    await auditLog('Activate User', uid);
-    notify('User activated.', 'ok');
-    loadUsers();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+function renderUsers(users) {
+  const tbody = document.getElementById('usersBody');
+  tbody.innerHTML = users.map(u => `<tr>
+    <td class="strong">${esc(u.username||'—')}</td>
+    <td style="font-size:.8rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(u.email||'—')}</td>
+    <td style="font-family:var(--fm);font-size:.78rem;">${esc(u.phone||'—')}</td>
+    <td style="font-size:.76rem;font-family:var(--fm);">${fmtDate(u.createdAt)}</td>
+    <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
+    <td style="white-space:nowrap;">
+      <button class="action-btn btn-view"    onclick="viewUser('${esc(u.id)}')">👤 View</button>
+      <button class="action-btn btn-suspend" onclick="suspendUser('${esc(u.id)}','${esc(u.email)}','${esc(u.username||'')}')">⚠ Suspend</button>
+    </td>
+  </tr>`).join('') || '<tr class="empty-row"><td colspan="6">No users found.</td></tr>';
+}
+
+window.filterUsers = function() {
+  const q    = (document.getElementById('userSearch').value||'').toLowerCase();
+  const role = document.getElementById('userRoleFilter').value;
+  renderUsers(_allUsers.filter(u =>
+    (!q || (u.email||'').toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q)) &&
+    (!role || u.role === role)
+  ));
 };
 
 window.viewUser = async function(uid) {
-  const u = _allUsers.find(x => x.id === uid);
-  if (!u) return;
-  // Fetch their course access
-  let courses = [];
+  const user = _allUsers.find(u => u.id === uid);
+  if (!user) return;
+  // Load their course access
+  let accessHTML = '';
   try {
-    const aSnap = await getDocs(query(collection(db,'courseAccess'), where('uid','==',uid)));
-    aSnap.forEach(d => { const data=d.data(); if(data.access) courses.push(COURSE_NAMES[data.courseId]||data.courseId); });
-  } catch(e){}
-  document.getElementById('userModalTitle').textContent = u.name || u.email || 'User Profile';
+    const q = query(collection(db,'courseAccess'), where('uid','==',uid));
+    const snap = await getDocs(q);
+    const courses = [];
+    snap.forEach(d => courses.push(d.data()));
+    accessHTML = courses.length
+      ? courses.map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:.84rem;">${esc(COURSE_NAMES[c.courseId]||c.courseId)}</span>
+          <span class="badge ${c.access ? 'badge-approved' : 'badge-locked'}">${c.access ? '✓ Access' : 'Revoked'}</span>
+        </div>`).join('')
+      : '<p style="color:var(--text3);font-size:.82rem;">No course access granted.</p>';
+  } catch(e) { accessHTML = '<p style="color:var(--red);font-size:.82rem;">Error loading access.</p>'; }
+
   document.getElementById('userModalBody').innerHTML = `
-    <table style="width:100%;border-collapse:collapse;">
-      ${[
-        ['UID', `<span style="font-family:var(--font-mono);font-size:.74rem;">${u.id}</span>`],
-        ['Name', u.name||'—'],
-        ['Email', u.email||'—'],
-        ['Phone', u.phone||'—'],
-        ['Role', `<span class="badge badge-${u.role||'user'}">${u.role||'user'}</span>`],
-        ['Status', u.suspended ? '<span class="badge badge-suspended">Suspended</span>' : '<span class="badge badge-active">Active</span>'],
-        ['Joined', fmtDate(u.createdAt)],
-        ['Courses', courses.length ? courses.join(', ') : 'None granted'],
-      ].map(([k,v]) => `<tr><td style="color:var(--text3);padding:7px 0;width:120px;font-size:.77rem;text-transform:uppercase;letter-spacing:.04em;">${k}</td><td style="padding:7px 0;">${v}</td></tr>`).join('')}
-    </table>`;
-  document.getElementById('userModal').classList.add('open');
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--g1);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-weight:800;font-size:1.2rem;color:#fff;">${(user.username||user.email||'?').charAt(0).toUpperCase()}</div>
+      <div>
+        <div style="font-family:var(--fd);font-weight:700;font-size:1rem;">${esc(user.username||'—')}</div>
+        <div style="font-size:.8rem;color:var(--text3);">${esc(user.email||'—')}</div>
+        <span class="badge badge-${user.role||'user'}" style="margin-top:4px;">${user.role||'user'}</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:var(--surface);border-radius:var(--r);padding:10px 14px;">
+        <div style="font-size:.66rem;font-family:var(--fm);text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Phone</div>
+        <div style="font-size:.84rem;">${esc(user.phone||'—')}</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--r);padding:10px 14px;">
+        <div style="font-size:.66rem;font-family:var(--fm);text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Joined</div>
+        <div style="font-size:.84rem;">${fmtDate(user.createdAt)}</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;font-family:var(--fm);text-transform:uppercase;color:var(--text3);margin-bottom:8px;letter-spacing:.1em;">Course Access</div>
+    ${accessHTML}`;
+  openModal('userModal');
 };
 
-window.closeUserModal = () => document.getElementById('userModal').classList.remove('open');
-
-window.quickGrant = function(email, uid) {
-  document.getElementById('grantEmail').value = email;
-  document.getElementById('grantUID').value = uid;
-  openGrantModal();
+window.suspendUser = async function(uid, email, name) {
+  if (!confirm(`Suspend user "${name || email}"? This is logged but does not delete their account.`)) return;
+  await writeAuditLog('Suspend User', `Suspended: ${email}`);
+  toast(`User ${name||email} flagged as suspended (logged).`, 'info');
 };
 
-// ═══════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // PAYMENTS
-// ═══════════════════════════════════════════════════
-window.loadPayments = async function() {
+// ══════════════════════════════════════════════
+async function loadPayments() {
   const tbody = document.getElementById('paymentsBody');
-  tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Loading…</td></tr>';
-  const statusFilter = document.getElementById('payStatusFilter')?.value || '';
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Loading…</td></tr>';
   try {
-    let snap;
-    try { snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc'))); }
-    catch(e) { snap = await getDocs(collection(db,'payments')); }
-    const rows = [];
-    snap.forEach(d => {
-      const data = d.data();
-      if (statusFilter && data.status !== statusFilter) return;
-      const sc = data.status==='approved'?'approved':data.status==='rejected'?'rejected':'pending';
-      const safeEmail = (data.email||'').replace(/'/g,"\'");
-      const approveBtn = data.status!=='approved'
-        ? `<button class="action-btn btn-approve" onclick="approvePayment('${d.id}','${data.uid||''}','${data.courseId||''}','${safeEmail}')">✓ Approve</button>` : '';
-      const rejectBtn = data.status!=='rejected'
-        ? `<button class="action-btn btn-reject" onclick="rejectPayment('${d.id}','${data.uid||''}','${data.courseId||''}','${safeEmail}')">✕ Reject</button>` : '';
-      rows.push(`<tr>
-        <td style="white-space:nowrap;font-size:.75rem;">${fmtDate(data.submittedAt)}</td>
-        <td style="font-size:.77rem;">${data.name||'—'}</td>
-        <td style="font-size:.77rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${data.email||'—'}</td>
-        <td style="white-space:nowrap;">${COURSE_NAMES[data.courseId]||data.courseId||'—'}</td>
-        <td>${data.paymentMethod||'—'}</td>
-        <td style="font-family:var(--font-mono);font-size:.72rem;">${data.txRef||'—'}</td>
-        <td><span class="badge badge-${sc}">${data.status||'pending'}</span></td>
-        <td style="white-space:nowrap;">
-          ${approveBtn}${rejectBtn}
-          <button class="action-btn btn-view" onclick="viewPayment('${d.id}')">👁</button>
-        </td>
-      </tr>`);
-    });
-    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="8" class="empty-row">No payments found.</td></tr>';
+    const snap = await getDocs(query(collection(db,'payments'), orderBy('submittedAt','desc')));
+    _allPayments = [];
+    snap.forEach(d => _allPayments.push({ id: d.id, ...d.data() }));
+    renderPayments(_allPayments);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-row" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7" style="color:var(--red);">Error: ${esc(e.message)}<br><small>You may need a Firestore composite index on payments(submittedAt desc).</small></td></tr>`;
   }
+}
+
+function renderPayments(payments) {
+  const tbody = document.getElementById('paymentsBody');
+  tbody.innerHTML = payments.map(p => {
+    const approveBtn = p.status !== 'approved'
+      ? `<button class="action-btn btn-approve" onclick="approvePayment('${p.id}','${esc(p.uid)}','${esc(p.courseId)}','${esc(p.email)}')">✓ Approve</button>`
+      : '<span style="color:var(--green);font-size:.75rem;">✓ Done</span>';
+    const rejectBtn = p.status !== 'rejected'
+      ? `<button class="action-btn btn-reject" onclick="rejectPayment('${p.id}','${esc(p.uid)}','${esc(p.courseId)}')">✕ Reject</button>`
+      : '';
+    return `<tr>
+      <td class="strong" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.email?.split('@')[0]||'—')}</td>
+      <td style="font-size:.78rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.email||'—')}</td>
+      <td style="font-size:.82rem;">${esc(COURSE_NAMES[p.courseId]||p.courseId||'—')}</td>
+      <td style="font-size:.8rem;">${esc(p.paymentMethod||'—')}</td>
+      <td style="font-size:.76rem;font-family:var(--fm);">${fmtDate(p.submittedAt)}</td>
+      <td><span class="badge badge-${p.status||'pending'}">${p.status||'pending'}</span></td>
+      <td style="white-space:nowrap;">${approveBtn}${rejectBtn}</td>
+    </tr>`;
+  }).join('') || '<tr class="empty-row"><td colspan="7">No payments found.</td></tr>';
+}
+
+window.filterPayments = function() {
+  const q  = (document.getElementById('paySearch').value||'').toLowerCase();
+  const st = document.getElementById('payStatusFilter').value;
+  renderPayments(_allPayments.filter(p =>
+    (!q  || (p.email||'').toLowerCase().includes(q) || (p.courseId||'').toLowerCase().includes(q)) &&
+    (!st || p.status === st)
+  ));
 };
 
 window.approvePayment = async function(payId, uid, courseId, email) {
-  if (!confirm(`Approve payment and grant access to ${COURSE_NAMES[courseId]||courseId} for ${email}?`)) return;
   try {
-    await updateDoc(doc(db,'payments',payId), { status:'approved', reviewedAt: serverTimestamp(), reviewedBy: auth.currentUser?.email });
-    if (uid && courseId) {
-      await setDoc(doc(db,'courseAccess', uid+'_'+courseId), {
-        uid, email, courseId, access: true,
-        approvedAt: serverTimestamp(), approvedBy: auth.currentUser?.email
-      });
-    }
-    await auditLog('Approved Payment', `payId:${payId}, courseId:${courseId}, user:${email}`);
-    notify(`✅ Payment approved. Access granted.`, 'ok');
-    loadPayments(); loadDashboard();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+    await updateDoc(doc(db,'payments',payId), {
+      status:     'approved',
+      reviewedAt: serverTimestamp(),
+      reviewedBy: currentAdmin.email,
+    });
+    // Write courseAccess
+    const accessDocId = uid + '_' + courseId;
+    await setDoc(doc(db,'courseAccess', accessDocId), {
+      uid, email, courseId,
+      access:     true,
+      approvedAt: serverTimestamp(),
+      approvedBy: currentAdmin.email,
+    });
+    await writeAuditLog('Approve Payment', `Payment approved: ${email} → ${COURSE_NAMES[courseId]||courseId}`);
+    toast('Payment approved & course access granted ✓', 'success');
+    await Promise.all([loadPayments(), loadDashboard()]);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
 
-window.rejectPayment = async function(payId, uid, courseId, email) {
-  if (!confirm(`Reject this payment from ${email}?`)) return;
+window.rejectPayment = async function(payId, uid, courseId) {
+  if (!confirm('Reject this payment?')) return;
   try {
-    await updateDoc(doc(db,'payments',payId), { status:'rejected', reviewedAt: serverTimestamp(), reviewedBy: auth.currentUser?.email });
-    if (uid && courseId) {
-      await setDoc(doc(db,'courseAccess', uid+'_'+courseId), { uid, email, courseId, access: false, rejectedAt: serverTimestamp() }, { merge:true });
-    }
-    await auditLog('Rejected Payment', `payId:${payId}, user:${email}`);
-    notify(`Payment rejected.`, 'err');
-    loadPayments(); loadDashboard();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+    await updateDoc(doc(db,'payments',payId), {
+      status:     'rejected',
+      reviewedAt: serverTimestamp(),
+      reviewedBy: currentAdmin.email,
+    });
+    await writeAuditLog('Reject Payment', `Payment rejected for courseId: ${courseId}`);
+    toast('Payment rejected.', 'error');
+    await Promise.all([loadPayments(), loadDashboard()]);
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
 
-window.viewPayment = async function(payId) {
-  try {
-    const snap = await getDoc(doc(db,'payments',payId));
-    if (!snap.exists()) return;
-    const d = snap.data();
-    document.getElementById('payModalBody').innerHTML = `
-      <table style="width:100%;border-collapse:collapse;">
-        ${[
-          ['Payment ID', `<span style="font-family:var(--font-mono);font-size:.74rem;">${payId}</span>`],
-          ['User Email', d.email||'—'],
-          ['Name', d.name||'—'],
-          ['Course', COURSE_NAMES[d.courseId]||d.courseId||'—'],
-          ['Method', d.paymentMethod||'—'],
-          ['Reference', d.txRef||d.reference||'—'],
-          ['Amount', d.amount||'—'],
-          ['Submitted', fmtDate(d.submittedAt)],
-          ['Status', `<span class="badge badge-${d.status||'pending'}">${d.status||'pending'}</span>`],
-          ['Reviewed By', d.reviewedBy||'—'],
-        ].map(([k,v]) => `<tr><td style="color:var(--text3);padding:7px 0;width:120px;font-size:.77rem;text-transform:uppercase;letter-spacing:.04em;">${k}</td><td style="padding:7px 0;">${v}</td></tr>`).join('')}
-      </table>`;
-    document.getElementById('payModal').classList.add('open');
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
-};
-window.closePayModal = () => document.getElementById('payModal').classList.remove('open');
-
-// ═══════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // COURSE ACCESS
-// ═══════════════════════════════════════════════════
-window.loadAccess = async function() {
+// ══════════════════════════════════════════════
+async function loadAccess() {
   const tbody = document.getElementById('accessBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="empty-row">Loading…</td></tr>';
-  const courseFilter  = document.getElementById('accessCourseFilter')?.value || '';
-  const statusFilter  = document.getElementById('accessStatusFilter')?.value;
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="6">Loading…</td></tr>';
   try {
-    let snap;
-    try { snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc'))); }
-    catch(e) { snap = await getDocs(collection(db,'courseAccess')); }
-    const rows = [];
-    snap.forEach(d => {
-      const data = d.data();
-      if (courseFilter && data.courseId !== courseFilter) return;
-      if (statusFilter !== undefined && statusFilter !== '' && String(data.access) !== statusFilter) return;
-      const sc = data.access ? 'approved' : 'rejected';
-      const label = data.access ? 'Granted' : 'Revoked';
-      rows.push(`<tr>
-        <td style="white-space:nowrap;font-size:.75rem;">${fmtDate(data.approvedAt)}</td>
-        <td style="font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${data.email||'—'}</td>
-        <td>${COURSE_NAMES[data.courseId]||data.courseId||'—'}</td>
-        <td><span class="badge badge-${sc}">${label}</span></td>
-        <td style="font-size:.75rem;">${data.approvedBy||'—'}</td>
-        <td style="white-space:nowrap;">
-          ${data.access
-            ? `<button class="action-btn btn-revoke" onclick="revokeAccess('${d.id}','${(data.email||'').replace(/'/g,"\\'")}')">⊘ Revoke</button>`
-            : `<button class="action-btn btn-grant" onclick="restoreAccess('${d.id}','${(data.email||'').replace(/'/g,"\\'")}')">✓ Grant</button>`
-          }
-        </td>
-      </tr>`);
-    });
-    tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="6" class="empty-row">No records found.</td></tr>';
+    const snap = await getDocs(query(collection(db,'courseAccess'), orderBy('approvedAt','desc')));
+    _allAccess = [];
+    snap.forEach(d => _allAccess.push({ id: d.id, ...d.data() }));
+    renderAccess(_allAccess);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-row" style="color:var(--red);">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:var(--red);">Error: ${esc(e.message)}</td></tr>`;
   }
+}
+
+function renderAccess(records) {
+  const tbody = document.getElementById('accessBody');
+  tbody.innerHTML = records.map(r => `<tr>
+    <td style="font-size:.8rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.email||r.uid||'—')}</td>
+    <td><span class="badge badge-${r.access?'approved':'locked'}">${esc(COURSE_NAMES[r.courseId]||r.courseId||'—')}</span></td>
+    <td><span class="badge badge-${r.access?'approved':'locked'}">${r.access ? '✓ Granted' : '✗ Revoked'}</span></td>
+    <td style="font-size:.76rem;color:var(--text3);">${esc(r.approvedBy||'—')}</td>
+    <td style="font-size:.76rem;font-family:var(--fm);">${fmtDate(r.approvedAt)}</td>
+    <td style="white-space:nowrap;">
+      ${r.access
+        ? `<button class="action-btn btn-revoke" onclick="revokeAccess('${r.id}','${esc(r.email||'')}','${esc(r.courseId)}')">✕ Revoke</button>`
+        : `<button class="action-btn btn-grant"  onclick="restoreAccess('${r.id}','${esc(r.uid||'')}','${esc(r.email||'')}','${esc(r.courseId)}')">✓ Restore</button>`
+      }
+    </td>
+  </tr>`).join('') || '<tr class="empty-row"><td colspan="6">No access records.</td></tr>';
+}
+
+window.filterAccess = function() {
+  const q  = (document.getElementById('accessSearch').value||'').toLowerCase();
+  const c  = document.getElementById('accessCourseFilter').value;
+  renderAccess(_allAccess.filter(r =>
+    (!q || (r.email||'').toLowerCase().includes(q)) &&
+    (!c || r.courseId === c)
+  ));
 };
 
-window.revokeAccess = async function(docId, email) {
-  if (!confirm(`Revoke access for ${email}?`)) return;
+window.revokeAccess = async function(docId, email, courseId) {
+  if (!confirm(`Revoke access to "${COURSE_NAMES[courseId]||courseId}" for ${email}?`)) return;
   try {
-    await updateDoc(doc(db,'courseAccess',docId), { access: false, revokedAt: serverTimestamp(), revokedBy: auth.currentUser?.email });
-    await auditLog('Revoked Course Access', `docId:${docId}, user:${email}`);
-    notify('Access revoked.', 'err');
-    loadAccess();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
-};
-
-window.restoreAccess = async function(docId, email) {
-  try {
-    await updateDoc(doc(db,'courseAccess',docId), { access: true, approvedAt: serverTimestamp(), approvedBy: auth.currentUser?.email });
-    await auditLog('Restored Course Access', `docId:${docId}, user:${email}`);
-    notify('✅ Access restored.', 'ok');
-    loadAccess();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
-};
-
-window.openGrantModal  = function() { document.getElementById('grantModal').classList.add('open'); };
-window.closeGrantModal = function() { document.getElementById('grantModal').classList.remove('open'); };
-
-window.manualGrantAccess = async function() {
-  const email    = document.getElementById('grantEmail').value.trim();
-  const uid      = document.getElementById('grantUID').value.trim();
-  const courseId = document.getElementById('grantCourse').value;
-  if (!email || !uid) { notify('Email and UID are required.', 'err'); return; }
-  try {
-    await setDoc(doc(db,'courseAccess', uid+'_'+courseId), {
-      uid, email, courseId, access: true,
-      approvedAt: serverTimestamp(), approvedBy: auth.currentUser?.email
+    await updateDoc(doc(db,'courseAccess',docId), {
+      access:    false,
+      revokedAt: serverTimestamp(),
+      revokedBy: currentAdmin.email,
     });
-    await auditLog('Manual Grant Access', `courseId:${courseId}, user:${email}`);
-    notify(`✅ Access granted for ${COURSE_NAMES[courseId]}.`, 'ok');
-    closeGrantModal();
-    loadAccess(); loadDashboard();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+    await writeAuditLog('Revoke Access', `${email} → ${COURSE_NAMES[courseId]||courseId}`);
+    toast('Access revoked.', 'error');
+    await loadAccess();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
 
-// ═══════════════════════════════════════════════════
-// COURSES
-// ═══════════════════════════════════════════════════
-const DEFAULT_COURSES = [
-  { id:'beginner',     name:'Beginner Trading Course',        desc:'Foundations of trading — market structure, sessions, risk basics.' },
-  { id:'intermediate', name:'Intermediate Trading Course',     desc:'Volume Profile, VWAP, and LVN Rejection model.' },
-  { id:'advanced',     name:'Advanced Trading Course',         desc:'Execution models — Rotation, Acceptance, Runner protocol.' },
-  { id:'propfirm',     name:'Prop Firm Trading Program',       desc:'Passing funded challenges with the SevenFX framework.' },
-  { id:'mentorship',   name:'Mentorship',                      desc:'1-on-1 coaching with live session review.' },
-];
-
-window.loadCourses = async function() {
-  const grid = document.getElementById('courseGrid');
-  grid.innerHTML = '';
-  for (const course of DEFAULT_COURSES) {
-    let enabled = true, locked = false;
-    try {
-      const snap = await getDoc(doc(db,'courses', course.id));
-      if (snap.exists()) { enabled = snap.data().enabled !== false; locked = !!snap.data().locked; }
-    } catch(e){}
-    const statusBadge = locked
-      ? '<span class="badge badge-locked">🔒 Locked</span>'
-      : enabled
-        ? '<span class="badge badge-active">✅ Active</span>'
-        : '<span class="badge badge-inactive">⊘ Disabled</span>';
-    grid.insertAdjacentHTML('beforeend', `
-      <div class="course-card-admin">
-        <div style="margin-bottom:8px;">${statusBadge}</div>
-        <div class="cc-name">${course.name}</div>
-        <div class="cc-sub">${course.desc}</div>
-        <div class="cc-actions">
-          <button class="action-btn btn-activate" onclick="setCourse('${course.id}',{enabled:true,locked:false})">✓ Enable</button>
-          <button class="action-btn btn-suspend" onclick="setCourse('${course.id}',{enabled:false})">⊘ Disable</button>
-          ${locked
-            ? `<button class="action-btn btn-grant" onclick="setCourse('${course.id}',{locked:false})">🔓 Unlock</button>`
-            : `<button class="action-btn btn-revoke" onclick="setCourse('${course.id}',{locked:true,enabled:false})">🔒 Lock</button>`
-          }
-        </div>
-      </div>`);
-  }
-};
-
-window.setCourse = async function(courseId, updates) {
+window.restoreAccess = async function(docId, uid, email, courseId) {
   try {
-    await setDoc(doc(db,'courses',courseId), { ...updates, updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.email }, { merge:true });
-    await auditLog('Course Config Update', `courseId:${courseId}, updates:${JSON.stringify(updates)}`);
-    notify(`Course ${courseId} updated.`, 'ok');
-    loadCourses();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+    await updateDoc(doc(db,'courseAccess',docId), {
+      access:     true,
+      approvedAt: serverTimestamp(),
+      approvedBy: currentAdmin.email,
+    });
+    await writeAuditLog('Restore Access', `${email} → ${COURSE_NAMES[courseId]||courseId}`);
+    toast('Access restored ✓', 'success');
+    await loadAccess();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
 
-// ═══════════════════════════════════════════════════
+window.openGrantModal = function() { openModal('grantModal'); };
+
+window.submitGrantAccess = async function() {
+  const email    = (document.getElementById('grantEmail').value||'').trim().toLowerCase();
+  const courseId = document.getElementById('grantCourse').value;
+  let   uid      = (document.getElementById('grantUID').value||'').trim();
+
+  if (!email) { toast('Please enter an email address.', 'error'); return; }
+
+  // Auto-resolve UID from users collection if not provided
+  if (!uid) {
+    try {
+      const q    = query(collection(db,'users'), where('email','==',email));
+      const snap = await getDocs(q);
+      if (snap.empty) { toast('No user found with that email.', 'error'); return; }
+      uid = snap.docs[0].id;
+    } catch(e) { toast('Error resolving user: ' + e.message, 'error'); return; }
+  }
+
+  try {
+    const accessDocId = uid + '_' + courseId;
+    await setDoc(doc(db,'courseAccess', accessDocId), {
+      uid, email, courseId,
+      access:     true,
+      approvedAt: serverTimestamp(),
+      approvedBy: currentAdmin.email,
+      manual:     true,
+    });
+    await writeAuditLog('Manual Grant', `${email} → ${COURSE_NAMES[courseId]||courseId}`);
+    toast(`Access granted: ${email} → ${COURSE_NAMES[courseId]}`, 'success');
+    closeModal('grantModal');
+    document.getElementById('grantEmail').value = '';
+    document.getElementById('grantUID').value   = '';
+    await loadAccess();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+};
+
+// ══════════════════════════════════════════════
 // ANNOUNCEMENTS
-// ═══════════════════════════════════════════════════
-window.postAnnouncement = async function() {
-  const title = document.getElementById('annTitle').value.trim();
-  const body  = document.getElementById('annBody').value.trim();
+// ══════════════════════════════════════════════
+async function loadAnnouncements() {
+  const list = document.getElementById('annList');
+  list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;">Loading…</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'announcements'), orderBy('createdAt','desc')));
+    if (snap.empty) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:20px 0;">No announcements yet. Create your first one!</div>';
+      return;
+    }
+    const icons = {info:'📢',course:'📚',webinar:'🎓',holiday:'🗓',community:'🌐'};
+    list.innerHTML = snap.docs.map(d => {
+      const a = d.data();
+      return `<div class="ann-card">
+        <div class="ann-icon">${icons[a.type]||'📢'}</div>
+        <div style="flex:1;">
+          <div class="ann-title">${esc(a.title||'—')}</div>
+          <div class="ann-body">${esc(a.body||'')}</div>
+          <div class="ann-meta">By ${esc(a.adminEmail||'—')} · ${fmtDateTime(a.createdAt)}</div>
+        </div>
+        <button class="ann-del" onclick="deleteAnn('${d.id}','${esc(a.title||'')}')">✕</button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+window.openAnnModal = function() {
+  document.getElementById('annTitle').value = '';
+  document.getElementById('annBody').value  = '';
+  openModal('annModal');
+};
+
+window.submitAnnouncement = async function() {
+  const title = (document.getElementById('annTitle').value||'').trim();
+  const body  = (document.getElementById('annBody').value||'').trim();
   const type  = document.getElementById('annType').value;
-  if (!title || !body) { notify('Title and message are required.', 'err'); return; }
+  if (!title || !body) { toast('Please fill in title and message.', 'error'); return; }
   try {
     await addDoc(collection(db,'announcements'), {
       title, body, type,
-      postedAt: serverTimestamp(),
-      postedBy: auth.currentUser?.email,
-      active: true
+      adminEmail: currentAdmin.email,
+      createdAt:  serverTimestamp(),
     });
-    await auditLog('Posted Announcement', title);
-    notify('✅ Announcement published.', 'ok');
-    document.getElementById('annTitle').value = '';
-    document.getElementById('annBody').value = '';
+    await writeAuditLog('Publish Announcement', title);
+    toast('Announcement published ✓', 'success');
+    closeModal('annModal');
     loadAnnouncements();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
 
-window.loadAnnouncements = async function() {
-  const list = document.getElementById('announcementsList');
-  list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">Loading…</div>';
-  try {
-    let snap;
-    try { snap = await getDocs(query(collection(db,'announcements'), orderBy('postedAt','desc'))); }
-    catch(e) { snap = await getDocs(collection(db,'announcements')); }
-    const items = [];
-    snap.forEach(d => items.push({ id:d.id, ...d.data() }));
-    if (!items.length) { list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">No announcements yet.</div>'; return; }
-    const TYPE_ICONS = { general:'📌', course:'📚', webinar:'🎥', holiday:'🏖️', community:'👥' };
-    list.innerHTML = items.map(a => `
-      <div class="audit-item">
-        <div class="audit-icon">${TYPE_ICONS[a.type]||'📌'}</div>
-        <div class="audit-info">
-          <div class="audit-action">${a.title}</div>
-          <div class="audit-meta">${a.body}</div>
-          <div class="audit-meta" style="margin-top:4px;">By ${a.postedBy||'admin'} · ${fmtDate(a.postedAt)}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-          <span class="badge badge-${a.active!==false?'active':'inactive'}">${a.active!==false?'Live':'Hidden'}</span>
-          <button class="action-btn btn-reject" onclick="deleteAnn('${a.id}')">🗑</button>
-        </div>
-      </div>`).join('');
-  } catch(e) {
-    list.innerHTML = `<div style="text-align:center;color:var(--red);padding:20px;">Error: ${e.message}</div>`;
-  }
-};
-
-window.deleteAnn = async function(id) {
-  if (!confirm('Delete this announcement?')) return;
+window.deleteAnn = async function(id, title) {
+  if (!confirm(`Delete announcement "${title}"?`)) return;
   try {
     await deleteDoc(doc(db,'announcements',id));
-    await auditLog('Deleted Announcement', id);
-    notify('Announcement deleted.', 'ok');
+    await writeAuditLog('Delete Announcement', title);
+    toast('Announcement deleted.', 'info');
     loadAnnouncements();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
 
-// ═══════════════════════════════════════════════════
-// COMMUNITY
-// ═══════════════════════════════════════════════════
-const DEFAULT_COMMUNITY = [
-  { id:'telegram',  icon:'📱', name:'Telegram',  url:'https://t.me/Seven7FxAcademy' },
-  { id:'instagram', icon:'📸', name:'Instagram', url:'https://www.instagram.com/seven77fx' },
-  { id:'tiktok',    icon:'🎵', name:'TikTok',    url:'https://www.tiktok.com/@vptrader7' },
-  { id:'youtube',   icon:'▶',  name:'YouTube',   url:'https://www.youtube.com/@Seven77FX' },
-];
+// ══════════════════════════════════════════════
+// SETTINGS — load from Firestore + save back
+// ══════════════════════════════════════════════
+function setVal(id, val) { const el=document.getElementById(id); if(el && val) el.value=val; }
 
-window.loadCommunity = async function() {
-  const grid = document.getElementById('communityGrid');
-  grid.innerHTML = '';
-  for (const c of DEFAULT_COMMUNITY) {
-    let url = c.url;
-    try {
-      const snap = await getDoc(doc(db,'community',c.id));
-      if (snap.exists() && snap.data().url) url = snap.data().url;
-    } catch(e){}
-    grid.insertAdjacentHTML('beforeend', `
-      <div class="community-card">
-        <div class="comm-icon">${c.icon}</div>
-        <div class="comm-name">${c.name}</div>
-        <div class="comm-url">${url}</div>
-        <div class="form-field" style="margin-bottom:10px;">
-          <input class="form-input" id="comm-${c.id}" type="url" value="${url}" placeholder="${url}">
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="action-btn btn-grant" onclick="saveCommLink('${c.id}')">💾 Save</button>
-          <a href="${url}" target="_blank" class="action-btn btn-view" style="display:inline-block;">↗ Visit</a>
-        </div>
-      </div>`);
-  }
-};
-
-window.saveCommLink = async function(id) {
-  const url = document.getElementById('comm-'+id)?.value.trim();
-  if (!url) return;
+async function loadSettings() {
   try {
-    await setDoc(doc(db,'community',id), { url, updatedAt: serverTimestamp(), updatedBy: auth.currentUser?.email }, { merge:true });
-    await auditLog('Updated Community Link', `${id}: ${url}`);
-    notify(`✅ ${id} link saved.`, 'ok');
-    loadCommunity();
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
-};
-
-// ═══════════════════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════════════════
-window.loadSettings = async function() {
-  try {
-    const snap = await getDoc(doc(db,'settings','global'));
-    if (!snap.exists()) return;
+    const snap = await getDoc(doc(db,'settings','main'));
+    if (!snap.exists()) return; // keep defaults
     const d = snap.data();
-    const fields = ['siteName','contactEmail','telegram','cbe','telebirr','other'];
-    fields.forEach(f => { const el=document.getElementById('cfg-'+f); if(el && d[f]) el.value=d[f]; });
-    const prices = ['beginner','intermediate','advanced','propfirm','mentorship'];
-    prices.forEach(p => { const el=document.getElementById('cfg-price-'+p); if(el && d['price_'+p]) el.value=d['price_'+p]; });
-  } catch(e) { console.warn('Load settings:', e.message); }
-};
+    setVal('cfgSiteName', d.siteName);
+    setVal('cfgEmail',    d.contactEmail);
+    setVal('cfgTelegram', d.telegram);
+    setVal('cfgCBE',      d.cbe);
+    setVal('cfgTelebirr', d.telebirr);
+    setVal('cfgP1',       d.priceBegin);
+    setVal('cfgP2',       d.priceInter);
+    setVal('cfgP3',       d.priceAdv);
+    setVal('cfgP4',       d.priceProp);
+  } catch(e) { console.warn('[Settings] Load error:', e.message); }
+}
 
 window.saveSettings = async function() {
   try {
-    const data = {};
-    ['siteName','contactEmail','telegram','cbe','telebirr','other'].forEach(f => {
-      const el = document.getElementById('cfg-'+f); if(el) data[f] = el.value;
-    });
-    ['beginner','intermediate','advanced','propfirm','mentorship'].forEach(p => {
-      const el = document.getElementById('cfg-price-'+p); if(el) data['price_'+p] = el.value;
-    });
-    data.updatedAt = serverTimestamp();
-    data.updatedBy = auth.currentUser?.email;
-    await setDoc(doc(db,'settings','global'), data, { merge:true });
-    await auditLog('Updated Settings', 'Global config saved');
-    notify('✅ Settings saved.', 'ok');
-  } catch(e) { notify('Error: ' + e.message, 'err'); }
-};
-
-// ═══════════════════════════════════════════════════
-// AUDIT LOGS
-// ═══════════════════════════════════════════════════
-window.loadAuditLogs = async function() {
-  const container = document.getElementById('auditTimeline');
-  container.innerHTML = '<div class="empty-row" style="text-align:center;color:var(--text3);padding:24px;">Loading…</div>';
-  try {
-    let snap;
-    try { snap = await getDocs(query(collection(db,'auditLogs'), orderBy('timestamp','desc'), limit(60))); }
-    catch(e) { snap = await getDocs(collection(db,'auditLogs')); }
-    const items = [];
-    snap.forEach(d => items.push({ id:d.id, ...d.data() }));
-    if (!items.length) { container.innerHTML = '<div class="empty-row" style="text-align:center;color:var(--text3);padding:24px;">No audit records yet.</div>'; return; }
-    const ACTION_ICONS = {
-      'Approved Payment':'✅', 'Rejected Payment':'✕', 'Revoked Course Access':'🔒',
-      'Restored Course Access':'🔓', 'Manual Grant Access':'🔑', 'Suspend User':'⊘',
-      'Activate User':'✓', 'Posted Announcement':'📢', 'Deleted Announcement':'🗑',
-      'Course Config Update':'📚', 'Updated Settings':'⚙️', 'Updated Community Link':'🌐'
-    };
-    container.innerHTML = items.map(a => `
-      <div class="audit-item">
-        <div class="audit-icon">${ACTION_ICONS[a.action]||'📋'}</div>
-        <div class="audit-info">
-          <div class="audit-action">${a.action||'Unknown action'}</div>
-          <div class="audit-meta">${a.details||''}</div>
-          <div class="audit-meta" style="margin-top:3px;">By <strong>${a.adminEmail||'admin'}</strong></div>
-        </div>
-        <div class="audit-time">${fmtDate(a.timestamp)}</div>
-      </div>`).join('');
+    await setDoc(doc(db,'settings','main'), {
+      siteName:       document.getElementById('cfgSiteName').value,
+      contactEmail:   document.getElementById('cfgEmail').value,
+      telegram:       document.getElementById('cfgTelegram').value,
+      cbe:            document.getElementById('cfgCBE').value,
+      telebirr:       document.getElementById('cfgTelebirr').value,
+      priceBegin:     document.getElementById('cfgP1').value,
+      priceInter:     document.getElementById('cfgP2').value,
+      priceAdv:       document.getElementById('cfgP3').value,
+      priceProp:      document.getElementById('cfgP4').value,
+      updatedAt:      serverTimestamp(),
+      updatedBy:      currentAdmin.email,
+    }, { merge: true });
+    await writeAuditLog('Update Settings', 'Platform settings updated by ' + currentAdmin.email);
+    toast('Settings saved ✓', 'success');
   } catch(e) {
-    container.innerHTML = `<div class="empty-row" style="text-align:center;color:var(--red);padding:24px;">Error: ${e.message}</div>`;
+    console.error('[Settings] Save error:', e.code, e.message);
+    toast('Error saving settings: ' + e.message, 'error');
   }
 };
+
+// ══════════════════════════════════════════════
+// COMMUNITY — load from Firestore + save
+// ══════════════════════════════════════════════
+const COMM_DEFAULTS = {
+  telegram:  'https://t.me/Seven7FxAcademy',
+  instagram: 'https://www.instagram.com/seven77fx',
+  tiktok:    'https://www.tiktok.com/@vptrader7',
+  youtube:   'https://www.youtube.com/@Seven77FX',
+  email:     'seven777fx@gmail.com',
+  receiptTg: '@ftadesse',
+};
+
+async function loadCommunity() {
+  try {
+    const snap = await getDoc(doc(db,'community','links'));
+    const d = snap.exists() ? { ...COMM_DEFAULTS, ...snap.data() } : COMM_DEFAULTS;
+    setVal('commTelegram',  d.telegram);
+    setVal('commInstagram', d.instagram);
+    setVal('commTiktok',    d.tiktok);
+    setVal('commYoutube',   d.youtube);
+    setVal('commEmail',     d.email);
+    setVal('commReceiptTg', d.receiptTg);
+    // Render preview cards
+    const prev = document.getElementById('communityPreview');
+    if (prev) {
+      prev.innerHTML = [
+        {icon:'📱',name:'Telegram',    val:d.telegram},
+        {icon:'📸',name:'Instagram',   val:d.instagram},
+        {icon:'🎵',name:'TikTok',      val:d.tiktok},
+        {icon:'▶', name:'YouTube',     val:d.youtube},
+        {icon:'✉', name:'Email',       val:d.email},
+        {icon:'📱',name:'Receipt Tg',  val:d.receiptTg},
+      ].map(c=>`<div class="community-card">
+        <div class="comm-icon">${c.icon}</div>
+        <div><div class="comm-name">${c.name}</div><div class="comm-link">${esc(c.val||'—')}</div></div>
+      </div>`).join('');
+    }
+  } catch(e) { console.warn('[Community] Load error:', e.message); }
+}
+
+window.saveCommunity = async function() {
+  try {
+    const data = {
+      telegram:  document.getElementById('commTelegram')?.value  || '',
+      instagram: document.getElementById('commInstagram')?.value || '',
+      tiktok:    document.getElementById('commTiktok')?.value    || '',
+      youtube:   document.getElementById('commYoutube')?.value   || '',
+      email:     document.getElementById('commEmail')?.value     || '',
+      receiptTg: document.getElementById('commReceiptTg')?.value || '',
+      updatedAt: serverTimestamp(),
+      updatedBy: currentAdmin.email,
+    };
+    await setDoc(doc(db,'community','links'), data, { merge: true });
+    await writeAuditLog('Update Community', 'Community links updated');
+    toast('Community links saved ✓', 'success');
+    await loadCommunity(); // refresh preview
+  } catch(e) {
+    console.error('[Community] Save error:', e.code, e.message);
+    toast('Error saving: ' + e.message, 'error');
+  }
+};
+
+// ══════════════════════════════════════════════
+// AUDIT LOGS
+// ══════════════════════════════════════════════
+async function loadAuditLogs() {
+  const el = document.getElementById('auditList');
+  el.innerHTML = '<div style="color:var(--text3);font-size:.85rem;">Loading…</div>';
+  try {
+    const snap = await getDocs(query(collection(db,'auditLogs'), orderBy('timestamp','desc'), limit(100)));
+    if (snap.empty) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:.85rem;">No audit logs yet.</div>';
+      return;
+    }
+    const dotClass = {
+      'Approve Payment': 'audit-dot-approve',
+      'Reject Payment':  'audit-dot-reject',
+      'Manual Grant':    'audit-dot-grant',
+      'Restore Access':  'audit-dot-grant',
+      'Revoke Access':   'audit-dot-revoke',
+      'Revoke Access':   'audit-dot-revoke',
+    };
+    el.innerHTML = snap.docs.map(d => {
+      const a = d.data();
+      const dc = dotClass[a.action] || 'audit-dot-default';
+      return `<div class="audit-item">
+        <div class="audit-dot ${dc}"></div>
+        <div>
+          <div class="audit-action">${esc(a.action||'—')}</div>
+          <div class="audit-detail">${esc(a.detail||'—')}</div>
+          <div class="audit-time">By ${esc(a.adminEmail||'—')} · ${fmtDateTime(a.timestamp)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--red);font-size:.85rem;">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// REVENUE TRACKER
+// ══════════════════════════════════════════════
+const COURSE_PRICES = {
+  beginner:     3500,
+  intermediate: 5500,
+  advanced:     8000,
+  propfirm:     12000,
+};
+
+async function loadRevenue() {
+  try {
+    const snap = await getDocs(collection(db,'payments'));
+    let totalRev=0, pendingRev=0, approvedCount=0, totalCount=0;
+    const byCourse = {}, byMethod = {};
+
+    snap.forEach(d => {
+      const p = d.data(); totalCount++;
+      const price = COURSE_PRICES[p.courseId] || 0;
+      const method = p.paymentMethod || 'Unknown';
+      const course = COURSE_NAMES[p.courseId] || p.courseId || 'Unknown';
+
+      if (p.status === 'approved') {
+        totalRev += price; approvedCount++;
+        byCourse[course]  = (byCourse[course]  || 0) + price;
+        byMethod[method]  = (byMethod[method]   || 0) + price;
+      } else if (p.status === 'pending') {
+        pendingRev += price;
+      }
+    });
+
+    document.getElementById('revTotal').textContent      = totalRev.toLocaleString() + ' ETB';
+    document.getElementById('revPending').textContent    = pendingRev.toLocaleString() + ' ETB';
+    document.getElementById('revCount').textContent      = totalCount;
+    document.getElementById('revApprCount').textContent  = approvedCount;
+
+    // By Course
+    const byC = document.getElementById('revByCourse');
+    byC.innerHTML = Object.keys(byCourse).length
+      ? Object.entries(byCourse).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:.84rem;color:var(--text2);">${esc(k)}</span>
+            <span style="font-family:var(--fm);font-size:.82rem;color:var(--green);font-weight:600;">${v.toLocaleString()} ETB</span>
+          </div>`).join('')
+      : '<div style="color:var(--text3);font-size:.82rem;">No approved payments yet.</div>';
+
+    // By Method
+    const byM = document.getElementById('revByMethod');
+    byM.innerHTML = Object.keys(byMethod).length
+      ? Object.entries(byMethod).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:.84rem;color:var(--text2);">${esc(k)}</span>
+            <span style="font-family:var(--fm);font-size:.82rem;color:var(--accent3);font-weight:600;">${v.toLocaleString()} ETB</span>
+          </div>`).join('')
+      : '<div style="color:var(--text3);font-size:.82rem;">No data yet.</div>';
+
+    // Approved table
+    const rows = [];
+    snap.forEach(d => {
+      const p = d.data();
+      if (p.status !== 'approved') return;
+      const price = COURSE_PRICES[p.courseId] || 0;
+      rows.push(`<tr>
+        <td style="font-size:.8rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.email||'—')}</td>
+        <td style="font-size:.82rem;">${esc(COURSE_NAMES[p.courseId]||p.courseId||'—')}</td>
+        <td style="font-size:.8rem;">${esc(p.paymentMethod||'—')}</td>
+        <td style="font-family:var(--fm);color:var(--green);font-weight:600;">${price.toLocaleString()} ETB</td>
+        <td style="font-size:.76rem;font-family:var(--fm);">${fmtDate(p.submittedAt)}</td>
+      </tr>`);
+    });
+    document.getElementById('revTableBody').innerHTML = rows.length
+      ? rows.join('')
+      : '<tr class="empty-row"><td colspan="5">No approved payments yet.</td></tr>';
+
+  } catch(e) {
+    console.error('[Revenue] Error:', e);
+    toast('Revenue load error: ' + e.message, 'error');
+  }
+}
+
+// Also update dashboard stat card
+document.getElementById('statRevenue').textContent = '—';
+
+// ── Expose non-module functions needed by inline onclick ─
+function exposeAdminActions() {
+  // Already exposed via window.xxx = above
+}
 
 </script>
 </body>
