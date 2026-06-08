@@ -5134,11 +5134,23 @@ function friendlyError(code) {
 }
 
 // ── Check if user is admin ───────────────────────────────
-async function checkAdmin(email) {
+async function checkAdmin(uid) {
   try {
-    // Document ID in 'admins' collection = raw email (e.g. "you@gmail.com")
-    const snap = await getDoc(doc(db, 'admins', email.toLowerCase()));
-    return snap.exists();
+    // Document ID in 'admins' collection = Firebase Auth UID
+    const snap = await getDoc(doc(db, 'admins', uid));
+    console.log('[SevenFX] Admin check — UID:', uid);
+    console.log('[SevenFX] Admin check — Firestore path: admins/' + uid);
+    console.log('[SevenFX] Admin check — doc exists:', snap.exists());
+    if (snap.exists()) {
+      const data = snap.data();
+      console.log('[SevenFX] Admin check — doc data:', JSON.stringify(data));
+      console.log('[SevenFX] Admin check — role value:', data.role);
+      const isAdmin = data.role === 'admin';
+      console.log('[SevenFX] Admin check — isAdmin result:', isAdmin);
+      return isAdmin;
+    }
+    console.log('[SevenFX] Admin check — isAdmin result: false (doc not found)');
+    return false;
   } catch (e) {
     console.warn('[SevenFX] Admin check failed:', e.code, e.message);
     return false;
@@ -5218,7 +5230,7 @@ window.firebaseSignup = async function() {
     const user = cred.user;
 
     // Check admin status
-    const isAdmin = await checkAdmin(email);
+    const isAdmin = await checkAdmin(user.uid);
     const role = isAdmin ? 'admin' : 'user';
 
     // Save to Firestore users collection
@@ -5294,7 +5306,7 @@ window.firebaseSignin = async function() {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
     const user = cred.user;
 
-    const isAdmin = await checkAdmin(user.email);
+    const isAdmin = await checkAdmin(user.uid);
     const role = isAdmin ? 'admin' : 'user';
     currentUserRole = role;
     updateNavAuth(user, role);
@@ -5653,8 +5665,9 @@ window._fbSubmitPayment = async function() {
 if (!auth) { console.error('[SevenFX] onAuthStateChanged skipped — auth is null'); }
 else onAuthStateChanged(auth, async (user) => {
   if (user) {
+    console.log('[SevenFX] Auth state — UID:', user.uid, '| Email:', user.email);
     const [isAdminResult, approvedCourses, pendingCourses] = await Promise.all([
-      checkAdmin(user.email),
+      checkAdmin(user.uid),
       loadUserCourses(user.uid),
       loadPendingCourses(user.uid),
     ]);
@@ -6067,7 +6080,7 @@ window.firebaseGoogleSignIn = async function() {
     const isNew  = result._tokenResponse?.isNewUser || false;
 
     // Check admin
-    const isAdminResult = await checkAdmin(user.email);
+    const isAdminResult = await checkAdmin(user.uid);
     const role = isAdminResult ? 'admin' : 'user';
 
     // Always upsert user doc (setDoc with merge so existing data isn't lost)
