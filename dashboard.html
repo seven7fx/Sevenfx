@@ -623,6 +623,74 @@ a { color:inherit; text-decoration:none; }
   .dash-sidebar { display:none; }
   .dash-sidebar.mob-open { display:flex; }
 }
+
+/* ══ ENROLL MODAL ══ */
+.enroll-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,.82);
+  backdrop-filter:blur(12px);z-index:9000;
+  display:none;align-items:center;justify-content:center;padding:16px;
+}
+.enroll-overlay.open { display:flex; }
+.enroll-box {
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--radius2);width:100%;max-width:420px;
+  overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7);
+}
+.enroll-hdr {
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  background:rgba(108,99,255,.07);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.enroll-hdr-title { font-family:var(--font-display);font-weight:800;font-size:.95rem; }
+.enroll-close {
+  background:none;border:none;color:var(--text2);font-size:1rem;
+  cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s;
+}
+.enroll-close:hover { background:rgba(248,113,113,.12);color:var(--red); }
+.enroll-body { padding:18px 20px; }
+.pay-method-btn {
+  width:100%;padding:13px 16px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);
+  font-family:var(--font-body);font-size:.88rem;font-weight:600;
+  cursor:pointer;text-align:left;transition:all .2s;margin-bottom:10px;
+  display:block;
+}
+.pay-method-btn:hover { border-color:var(--accent);background:rgba(108,99,255,.08); }
+.pay-method-sub {
+  font-size:.75rem;color:var(--text3);font-weight:400;
+  font-family:var(--font-mono);margin-top:2px;
+}
+.enroll-instr {
+  background:rgba(108,99,255,.06);border:1px solid rgba(108,99,255,.18);
+  border-radius:var(--radius);padding:13px 15px;margin-bottom:13px;
+  font-size:.84rem;color:var(--text2);line-height:1.65;
+}
+.enroll-tg-box {
+  background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);
+  border-radius:var(--radius);padding:12px 15px;margin-bottom:14px;
+}
+.enroll-confirm-btn {
+  width:100%;padding:13px;border-radius:var(--radius);
+  background:var(--grad1);color:#fff;border:none;
+  font-family:var(--font-display);font-weight:700;font-size:.9rem;
+  cursor:pointer;transition:opacity .2s;margin-bottom:8px;
+}
+.enroll-confirm-btn:hover { opacity:.88; }
+.enroll-confirm-btn:disabled { opacity:.5;cursor:not-allowed; }
+.enroll-back-btn {
+  width:100%;padding:10px;border-radius:var(--radius);
+  background:var(--surface);border:1px solid var(--border2);
+  color:var(--text2);font-family:var(--font-body);font-size:.84rem;
+  cursor:pointer;transition:all .2s;
+}
+.enroll-back-btn:hover { border-color:var(--red);color:var(--red); }
+.enroll-err {
+  color:var(--red);font-size:.8rem;padding:8px 12px;
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);
+  border-radius:8px;margin-bottom:10px;display:none;
+}
+.enroll-success-icon { font-size:2.5rem;margin-bottom:10px; }
 </style>
 </head>
 <body>
@@ -1176,8 +1244,8 @@ a { color:inherit; text-decoration:none; }
         <div class="platform-card">
           <div class="plat-logo">🏦</div>
           <div class="plat-name">IC Markets</div>
-          <div class="plat-desc">SevenFX recommended broker. Raw spreads, fast execution, ideal for forex and gold trading.</div>
-          <a class="plat-btn" href="https://www.icmarkets.com" target="_blank">Open Account ↗</a>
+          <div class="plat-desc">SevenFX recommended broker. Ultra-low raw spreads, fast execution. Ideal for forex and XAUUSD.</div>
+          <a class="plat-btn" href="https://www.icmarkets.com/?camp=65270" target="_blank">Open Account ↗</a>
         </div>
         <div class="platform-card">
           <div class="plat-logo">📊</div>
@@ -1351,7 +1419,7 @@ a { color:inherit; text-decoration:none; }
 import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, updateProfile, browserLocalPersistence, setPersistence, sendEmailVerification }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, orderBy, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, query, where, getDocs, orderBy, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1609,7 +1677,7 @@ function buildAllCoursesGrid() {
         : '<span class="badge badge-locked">🔒 Locked</span>';
     const btn = isApproved
       ? `<button class="course-access-btn" onclick="openCourseContent('${cid}')">Access →</button>`
-      : `<button class="course-access-btn" onclick="openDashEnrollModal('${cid}')">${isPending ? '⏳ Awaiting Approval' : 'Enroll →'}</button>`;
+      : `<button class="course-access-btn" ${isPending ? 'disabled' : `onclick="openEnrollModal('${cid}')"`}>${isPending ? '⏳ Awaiting Approval' : 'Enroll →'}</button>`;
     return `<div class="course-card-dash ${isApproved?'':'locked'}">
       <div class="course-icon">${ci.icon}</div>
       <div class="course-name">${ci.name}</div>
@@ -1976,151 +2044,155 @@ function toggleMobileSidebar() {
   document.getElementById('dashSidebar').classList.toggle('mob-open');
 }
 
-// ════════════════════════════════════════════════════════
-// IN-DASHBOARD COURSE ENROLLMENT MODAL
-// ════════════════════════════════════════════════════════
-let _dashEnrollCourseId   = null;
-let _dashEnrollPayMethod  = null;
+// ═══════════════════════════════════════════════════
+// IN-DASHBOARD ENROLLMENT MODAL
+// ═══════════════════════════════════════════════════
+let _enrollCourseId = null;
+let _enrollMethod   = null;
 
-window.openDashEnrollModal = function(cid) {
-  const user = auth?.currentUser;
-  if (!user) { window.location.href = 'index.html'; return; }
-
-  // Already approved?
+window.openEnrollModal = function(cid) {
+  if (!auth?.currentUser) { window.location.href = 'index.html'; return; }
   if (userCourses.includes(cid)) { openCourseContent(cid); return; }
 
-  _dashEnrollCourseId  = cid;
-  _dashEnrollPayMethod = null;
+  _enrollCourseId = cid;
+  _enrollMethod   = null;
   const ci = COURSE_INFO[cid] || {};
-  document.getElementById('dashEnrollTitle').textContent = 'Enroll: ' + (ci.name || cid);
-  document.getElementById('dashEnrollStep1').style.display = 'block';
-  document.getElementById('dashEnrollStep2').style.display = 'none';
-  document.getElementById('dashEnrollStep3').style.display = 'none';
-  const errEl = document.getElementById('dashEnrollErr');
+
+  document.getElementById('enrollTitle').textContent = 'Enroll: ' + (ci.name || cid);
+  document.getElementById('enrollStep1').style.display = 'block';
+  document.getElementById('enrollStep2').style.display = 'none';
+  document.getElementById('enrollStep3').style.display = 'none';
+  const errEl = document.getElementById('enrollErr');
   if (errEl) errEl.style.display = 'none';
 
-  const ov = document.getElementById('dashEnrollOverlay');
-  ov.style.display = 'flex';
+  document.getElementById('enrollOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 };
 
-window.closeDashEnroll = function() {
-  document.getElementById('dashEnrollOverlay').style.display = 'none';
+window.closeEnrollModal = function() {
+  document.getElementById('enrollOverlay').classList.remove('open');
   document.body.style.overflow = '';
 };
 
-window.selectDashPayMethod = function(method) {
-  _dashEnrollPayMethod = method;
-  const ci = COURSE_INFO[_dashEnrollCourseId] || {};
+window.selectPayMethod = function(method) {
+  _enrollMethod = method;
+  const ci = COURSE_INFO[_enrollCourseId] || {};
 
-  const instructions = {
-    'CBE':      `Transfer <strong>${ci.price || '—'}</strong> to:<br><br>🏦 <strong>CBE Bank</strong><br>Account: <strong style="color:var(--accent)">1000355263208</strong><br><br>Include your email as reference.`,
-    'Telebirr': `Send <strong>${ci.price || '—'}</strong> to:<br><br>📱 <strong>Telebirr</strong><br>Number: <strong style="color:var(--accent)">0913053057</strong><br><br>Include your email as description.`,
-    'USDT':     `Pay <strong>${ci.price || '—'}</strong> in USDT (TRC-20).<br><br>💎 Contact <a href="https://t.me/ftadesse" target="_blank" style="color:#34d399;font-weight:700;">@ftadesse</a> on Telegram for the wallet address.`,
+  const instrs = {
+    CBE:      `<strong>Transfer ${ci.price || '—'}</strong> to:<br><br>🏦 <strong>CBE Bank</strong><br>Account No: <strong style="color:var(--accent3)">1000355263208</strong><br><br>Include your email as the transfer reference.`,
+    Telebirr: `<strong>Send ${ci.price || '—'}</strong> to:<br><br>📱 <strong>Telebirr</strong><br>Number: <strong style="color:var(--accent3)">0913053057</strong><br><br>Add your email in the description field.`,
+    USDT:     `Pay <strong>${ci.price || '—'}</strong> in USDT (TRC-20).<br><br>💎 Message <a href="https://t.me/ftadesse" target="_blank" style="color:var(--green);font-weight:700;">@ftadesse</a> on Telegram for the wallet address before sending.`,
   };
 
-  const instr = document.getElementById('dashPayInstructions');
-  if (instr) instr.innerHTML = instructions[method] || '';
-
-  document.getElementById('dashEnrollStep1').style.display = 'none';
-  document.getElementById('dashEnrollStep2').style.display = 'block';
+  document.getElementById('enrollInstr').innerHTML = instrs[method] || '';
+  document.getElementById('enrollStep1').style.display = 'none';
+  document.getElementById('enrollStep2').style.display = 'block';
 };
 
-window.submitDashEnroll = async function() {
+window.submitEnrollment = async function() {
   const user = auth?.currentUser;
-  if (!user || !_dashEnrollCourseId) return;
+  if (!user || !_enrollCourseId) return;
 
-  const btn = document.getElementById('dashConfirmBtn');
-  const errEl = document.getElementById('dashEnrollErr');
-  if (errEl) errEl.style.display = 'none';
-  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
-
-  const ci = COURSE_INFO[_dashEnrollCourseId] || {};
+  const btn   = document.getElementById('enrollConfirmBtn');
+  const errEl = document.getElementById('enrollErr');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
 
   try {
+    const ci = COURSE_INFO[_enrollCourseId] || {};
     await addDoc(collection(db, 'payments'), {
       uid:           user.uid,
       email:         user.email,
-      courseId:      _dashEnrollCourseId,
-      courseName:    ci.name || _dashEnrollCourseId,
+      courseId:      _enrollCourseId,
+      courseName:    ci.name  || _enrollCourseId,
       coursePrice:   ci.price || '—',
-      paymentMethod: _dashEnrollPayMethod || '—',
+      paymentMethod: _enrollMethod || '—',
       status:        'pending',
       submittedAt:   serverTimestamp(),
       source:        'dashboard',
     });
 
-    console.log('[DashEnroll] ✓ Payment saved:', _dashEnrollCourseId, _dashEnrollPayMethod);
-
-    // Refresh user payments cache
-    userPayments.push({
-      courseId: _dashEnrollCourseId,
-      status:   'pending',
-    });
+    // Update local cache so UI refreshes immediately
+    userPayments.push({ courseId: _enrollCourseId, status: 'pending' });
     buildAllCoursesGrid();
-    buildMyCourses();
+    buildMyCoursesSection();
 
-    document.getElementById('dashEnrollStep2').style.display = 'none';
-    document.getElementById('dashEnrollStep3').style.display = 'block';
+    document.getElementById('enrollStep2').style.display = 'none';
+    document.getElementById('enrollStep3').style.display = 'block';
 
   } catch(e) {
-    console.error('[DashEnroll] Save error:', e.code, e.message);
-    if (btn) { btn.textContent = '✅ I Have Sent My Receipt'; btn.disabled = false; }
-    if (errEl) {
-      errEl.textContent = 'Failed to save: ' + e.message;
-      errEl.style.display = 'block';
-    }
+    console.error('[Enroll] Save error:', e.code, e.message);
+    errEl.textContent = 'Failed to save: ' + (e.message || e.code);
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '✅ I Have Sent My Receipt';
   }
 };
 
 </script>
 
 
-<!-- ═══ IN-DASHBOARD ENROLL MODAL ═══ -->
-<div id="dashEnrollOverlay" onclick="if(event.target===this)closeDashEnroll()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:9000;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7);">
-    <div style="padding:18px 22px;border-bottom:1px solid var(--border);background:rgba(108,99,255,.06);display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-family:var(--font-display,'Syne',sans-serif);font-weight:800;font-size:1rem;" id="dashEnrollTitle">Enroll in Course</div>
-      <button onclick="closeDashEnroll()" style="background:none;border:none;color:var(--text2);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:6px;">✕</button>
+<!-- ══ ENROLL MODAL ══ -->
+<div class="enroll-overlay" id="enrollOverlay" onclick="if(event.target===this)closeEnrollModal()">
+  <div class="enroll-box">
+    <div class="enroll-hdr">
+      <div class="enroll-hdr-title" id="enrollTitle">Enroll in Course</div>
+      <button class="enroll-close" onclick="closeEnrollModal()">✕</button>
     </div>
-    <div style="padding:20px 22px;">
-      <!-- Step 1: Choose payment method -->
-      <div id="dashEnrollStep1">
-        <div style="font-size:.75rem;font-family:var(--font-mono,'DM Mono',monospace);text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:12px;">Select Payment Method</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <button onclick="selectDashPayMethod('CBE')" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--font-body,'DM Sans',sans-serif);font-size:.9rem;font-weight:600;cursor:pointer;text-align:left;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
-            🏦 CBE Bank Transfer<br><span style="font-size:.78rem;color:var(--text3);font-weight:400;font-family:var(--font-mono,monospace);">Account: 1000355263208</span>
-          </button>
-          <button onclick="selectDashPayMethod('Telebirr')" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--font-body,'DM Sans',sans-serif);font-size:.9rem;font-weight:600;cursor:pointer;text-align:left;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
-            📱 Telebirr<br><span style="font-size:.78rem;color:var(--text3);font-weight:400;font-family:var(--font-mono,monospace);">Number: 0913053057</span>
-          </button>
-          <button onclick="selectDashPayMethod('USDT')" style="padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:var(--font-body,'DM Sans',sans-serif);font-size:.9rem;font-weight:600;cursor:pointer;text-align:left;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
-            💎 USDT (TRC-20)<br><span style="font-size:.78rem;color:var(--text3);font-weight:400;font-family:var(--font-mono,monospace);">Contact via Telegram for wallet address</span>
-          </button>
-        </div>
+    <div class="enroll-body">
+
+      <!-- Step 1: Select payment method -->
+      <div id="enrollStep1">
+        <div style="font-size:.7rem;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:12px;">Select Payment Method</div>
+        <button class="pay-method-btn" onclick="selectPayMethod('CBE')">
+          🏦 &nbsp;CBE Bank Transfer
+          <div class="pay-method-sub">Account: 1000355263208</div>
+        </button>
+        <button class="pay-method-btn" onclick="selectPayMethod('Telebirr')">
+          📱 &nbsp;Telebirr
+          <div class="pay-method-sub">Number: 0913053057</div>
+        </button>
+        <button class="pay-method-btn" onclick="selectPayMethod('USDT')">
+          💎 &nbsp;USDT (TRC-20)
+          <div class="pay-method-sub">Contact Telegram for wallet address</div>
+        </button>
       </div>
 
-      <!-- Step 2: Confirm sent + submit -->
-      <div id="dashEnrollStep2" style="display:none;">
-        <div id="dashPayInstructions" style="background:rgba(108,99,255,.06);border:1px solid rgba(108,99,255,.2);border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:.85rem;line-height:1.6;color:var(--text2);"></div>
-        <div style="background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-          <div style="font-size:.72rem;font-family:var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.1em;color:#34d399;margin-bottom:6px;">📱 After Payment</div>
-          <div style="font-size:.84rem;color:var(--text2);">Send your receipt to Telegram: <a href="https://t.me/ftadesse" target="_blank" style="color:#34d399;font-weight:700;">@ftadesse</a></div>
-          <div style="font-size:.76rem;color:var(--text3);margin-top:4px;">Your course will be activated after verification.</div>
+      <!-- Step 2: Instructions + confirm -->
+      <div id="enrollStep2" style="display:none;">
+        <div class="enroll-instr" id="enrollInstr"></div>
+        <div class="enroll-tg-box">
+          <div style="font-size:.68rem;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:6px;">📱 After Payment</div>
+          <div style="font-size:.83rem;color:var(--text2);">
+            Send your receipt to Telegram:<br>
+            <a href="https://t.me/ftadesse" target="_blank" style="color:var(--green);font-weight:700;font-size:.9rem;">@ftadesse</a>
+          </div>
+          <div style="font-size:.74rem;color:var(--text3);margin-top:5px;">Course activates within 24–48 hours after verification.</div>
         </div>
-        <div id="dashEnrollErr" style="display:none;color:#f87171;font-size:.8rem;padding:8px 12px;background:rgba(248,113,113,.08);border-radius:8px;margin-bottom:10px;border:1px solid rgba(248,113,113,.2);"></div>
-        <button id="dashConfirmBtn" onclick="submitDashEnroll()" style="width:100%;padding:13px;background:linear-gradient(135deg,#6c63ff,#00d4ff);color:#fff;border:none;border-radius:12px;font-family:var(--font-body,'DM Sans',sans-serif);font-weight:700;font-size:.95rem;cursor:pointer;transition:opacity .2s;margin-bottom:8px;">✅ I Have Sent My Receipt</button>
-        <button onclick="document.getElementById('dashEnrollStep1').style.display='block';document.getElementById('dashEnrollStep2').style.display='none';" style="width:100%;padding:10px;background:var(--surface);border:1px solid var(--border2);color:var(--text2);border-radius:12px;font-family:var(--font-body,'DM Sans',sans-serif);font-size:.85rem;cursor:pointer;">← Back</button>
+        <div class="enroll-err" id="enrollErr"></div>
+        <button class="enroll-confirm-btn" id="enrollConfirmBtn" onclick="submitEnrollment()">
+          ✅ I Have Sent My Receipt
+        </button>
+        <button class="enroll-back-btn" onclick="document.getElementById('enrollStep1').style.display='block';document.getElementById('enrollStep2').style.display='none';">
+          ← Back
+        </button>
       </div>
 
       <!-- Step 3: Success -->
-      <div id="dashEnrollStep3" style="display:none;text-align:center;padding:10px 0;">
-        <div style="font-size:2.5rem;margin-bottom:12px;">✅</div>
-        <div style="font-family:var(--font-display,'Syne',sans-serif);font-weight:800;font-size:1.1rem;margin-bottom:8px;">Payment Submitted!</div>
-        <p style="font-size:.85rem;color:var(--text2);line-height:1.65;margin-bottom:16px;">Your payment has been recorded. Send your receipt to <a href="https://t.me/ftadesse" target="_blank" style="color:#34d399;font-weight:700;">@ftadesse</a> on Telegram.<br><br>Your course will be unlocked within <strong>24–48 hours</strong> after verification.</p>
-        <a href="https://t.me/ftadesse" target="_blank" style="display:block;padding:12px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:.88rem;margin-bottom:8px;">📱 Open Telegram @ftadesse</a>
-        <button onclick="closeDashEnroll()" style="width:100%;padding:11px;background:var(--surface);border:1px solid var(--border2);color:var(--text2);border-radius:12px;font-family:var(--font-body,'DM Sans',sans-serif);font-size:.85rem;cursor:pointer;">Close</button>
+      <div id="enrollStep3" style="display:none;text-align:center;padding:8px 0;">
+        <div class="enroll-success-icon">✅</div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:8px;">Payment Submitted!</div>
+        <p style="font-size:.84rem;color:var(--text2);line-height:1.65;margin-bottom:16px;">
+          Send your receipt to <a href="https://t.me/ftadesse" target="_blank" style="color:var(--green);font-weight:700;">@ftadesse</a> on Telegram.<br>
+          Your course unlocks within <strong>24–48 hours</strong>.
+        </p>
+        <a href="https://t.me/ftadesse" target="_blank" style="display:block;padding:12px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border-radius:var(--radius);font-weight:700;font-size:.86rem;text-decoration:none;margin-bottom:8px;text-align:center;">
+          📱 Message @ftadesse on Telegram
+        </a>
+        <button class="enroll-back-btn" onclick="closeEnrollModal()">Close</button>
       </div>
+
     </div>
   </div>
 </div>
