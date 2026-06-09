@@ -5283,21 +5283,19 @@ window.firebaseSignup = async function() {
     updateNavAuth(user, role);
     setBtn('signupBtn', 'Create Account →', false);
 
-    // Send email verification
+    // Send email verification with correct return URL
     try {
-      // actionCodeSettings directs user back to the site after clicking the link
-      const actionCodeSettings = {
-        url: window.location.origin + (window.location.pathname.includes('Sevenfx') ? '/Sevenfx/' : '/'),
+      const _acs = {
+        url: window.location.origin +
+             (window.location.pathname.replace(/\/[^\/]*$/, '/') || '/'),
         handleCodeInApp: false,
       };
-      await sendEmailVerification(user, actionCodeSettings);
+      await sendEmailVerification(user, _acs);
       console.log('[SevenFX] ✓ Verification email sent to:', email);
     } catch(verErr) {
-      console.error('[SevenFX] ✗ Verification email FAILED:', verErr.code, verErr.message);
-      // Common causes:
-      // - auth/too-many-requests: user already sent recently, Firebase rate-limits to 1/minute
-      // - auth/missing-continue-uri: handled above with actionCodeSettings
-      // Don't block signup if verification email fails — just log it
+      // auth/too-many-requests = already sent < 60s ago (harmless, Firebase rate-limits per user)
+      // auth/missing-continue-uri = actionCodeSettings URL issue
+      console.error('[SevenFX] ✗ Verification email failed:', verErr.code, verErr.message);
     }
 
     // Show success modal then proceed to payment or dashboard
@@ -5306,7 +5304,7 @@ window.firebaseSignup = async function() {
     setTimeout(() => {
       showSuccessModal(
         'Account Created! 🎉',
-        'Welcome to SevenFX Academy! A verification email has been sent to ' + email + '. Check your inbox (and spam folder) and click the link to verify your email before accessing courses.',
+        'Welcome to SevenFX Academy! A verification email has been sent to ' + email + '. Please verify your email to activate your account.',
         '✓',
         'Proceed to Payment',
         () => { closeSuccessModal(); showAuthStep(2); },
@@ -6195,24 +6193,17 @@ window.firebaseGoogleSignIn = async function() {
 
     // Always upsert user doc (setDoc with merge so existing data isn't lost)
     await setDoc(doc(db, 'users', user.uid), {
-      uid:           user.uid,
-      username:      user.displayName || user.email.split('@')[0],
-      email:         user.email,
-      role:          role,
-      emailVerified: user.emailVerified,
+      uid:      user.uid,
+      username: user.displayName || user.email.split('@')[0],
+      email:    user.email,
+      role:     role,
       ...(isNew ? { createdAt: serverTimestamp(), phone: '' } : {}),
     }, { merge: true });
 
-    console.log('[SevenFX] ✓ Google sign-in:', user.email, '| new:', isNew, '| verified:', user.emailVerified);
-    // Google accounts are pre-verified — no need to send verification email
+    console.log('[SevenFX] ✓ Google sign-in:', user.email, '| new:', isNew);
 
     currentUserRole = role;
     updateNavAuth(user, role);
-
-    // Update emailVerified status in Firestore user doc
-    try {
-      await setDoc(doc(db, 'users', user.uid), { emailVerified: user.emailVerified }, { merge: true });
-    } catch(e) { /* non-critical */ }
 
     // Load course access
     const [approvedCourses, pendingCourses] = await Promise.all([
